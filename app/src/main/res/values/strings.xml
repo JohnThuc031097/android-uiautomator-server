@@ -1,0 +1,56 @@
+<!--
+  ~ The MIT License (MIT)
+  ~ Copyright (c) 2015 xiaocong@gmail.com
+  ~
+  ~ Permission is hereby granted, free of charge, to any person obtaining a copy
+  ~ of this software and associated documentation files (the "Software"), to deal
+  ~ in the Software without restriction, including without limitation the rights
+  ~ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  ~ copies of the Software, and to permit persons to whom the Software is
+  ~ furnished to do so, subject to the following conditions:
+  ~
+  ~ The above copyright notice and this permission notice shall be included in all
+  ~ copies or substantial portions of the Software.
+  ~
+  ~ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  ~ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  ~ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+  ~ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+  ~ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+  ~ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
+  ~ OR OTHER DEALINGS IN THE SOFTWARE.
+  -->
+
+<resources>
+    <string name="app_name">ATX</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="monitor_service_ticker">UIAutomator service started</string>
+    <string name="monitor_service_title">UIAutomator</string>
+    <string name="monitor_service_text">IP</string>
+    <string name="agent_die">:agent is die</string>
+    <string name="agent_live">:agent is live</string>
+    <string name="fast_input_label">FastInputIME</string>
+    <string name="stop_atxagent">stop</string>
+    <string name="start_atxagent">start</string>
+    <string name="check_atxagent">check</string>
+    <string name="stop_uiautomator">stop</string>
+    <string name="start_uiautomator">start</string>
+    <string name="check_uiautomator">check</string>
+    <string name="test_uiautomator">test</string>
+    <string name="barrier_free">accessibility</string>
+    <string name="develop_mode">develop mode</string>
+    <string name="short_cut">Shortcut</string>
+    <string name="float_window">Float Window</string>
+    <string name="enable_float_window">enable</string>
+    <string name="disable_float_window">disable</string>
+    <string name="identify">identify</string>
+    <string name="ip_address">IP Address:</string>
+    <string name="result">Result:</string>
+    <string name="quit">quit</string>
+    <string name="no_permission_tip">No permission to write sd card</string>
+    <string name="atx_agent">ATX-Agent</string>
+    <string name="avaible_internal_storage">Internal Storage:</string>
+    <string name="avaible_sd_storage">SD Storage:</string>
+</resources>

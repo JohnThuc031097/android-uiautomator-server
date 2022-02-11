@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.github.uiautomator.MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/atx_agent_status"
+            style="@style/LeftTitle"
+            android:text="@string/atx_agent"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+            <Button
+                style="@style/SelectButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:onClick="checkAtxAgentStatus"
+                android:text="@string/check_atxagent" />
+
+            <Button
+                android:id="@+id/stop_atx_agent"
+                style="@style/SelectButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:onClick="atxAgentStopConfirm"
+                android:text="@string/stop_atxagent" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/uiautomator_status"
+                style="@style/LeftTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/monitor_service_title"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/uiautomator_mode"
+                style="@style/LeftTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+            <Button
+                style="@style/SelectButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:onClick="checkUiautomatorStatus"
+                android:text="@string/check_uiautomator" />
+
+            <Button
+                android:id="@+id/testUiautomator"
+                style="@style/SelectButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:onClick="testUiautomator"
+                android:text="@string/test_uiautomator" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/start_uiautomator"
+                style="@style/SelectButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="startUiautomator"
+                android:text="@string/start_uiautomator" />
+
+            <Button
+                android:id="@+id/stop_uiautomator"
+                style="@style/SelectButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="stopUiautomator"
+                android:text="@string/stop_uiautomator" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                style="@style/LeftTitle"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="@string/short_cut"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/development_settings"
+                style="@style/SelectButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="@string/develop_mode" />
+
+            <Button
+                android:id="@+id/accessibility"
+                style="@style/SelectButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="@string/barrier_free" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_identify"
+                style="@style/SelectButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="@string/identify" />
+
+            <Button
+                android:id="@+id/btn_finish"
+                style="@style/SelectButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="@string/quit" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                style="@style/LeftTitle"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="@string/float_window"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <Button
+                style="@style/SelectButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="showFloatWindow"
+                android:text="@string/enable_float_window" />
+
+            <Button
+                style="@style/SelectButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="dismissFloatWindow"
+                android:text="@string/disable_float_window" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                style="@style/LeftTitle"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="@string/avaible_internal_storage"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/in_storage"
+                style="@style/LeftTitle"
+                android:layout_width="0dp"
+                android:layout_weight="1" />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                style="@style/LeftTitle"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="@string/ip_address"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/ip_address"
+                style="@style/LeftTitle"
+                android:layout_width="0dp"
+                android:layout_weight="1" />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                style="@style/LeftTitle"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="@string/result"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/serviceMessage"
+                style="@style/LeftTitle"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                />
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+</ScrollView>
