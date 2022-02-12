@@ -1,9 +1,9 @@
 package com.github.uiautomator;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.KeyguardManager;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,8 +16,6 @@ import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.github.uiautomator.util.Permissons4App;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -26,6 +24,7 @@ public class IdentifyActivity extends Activity {
     public static final String ACTION_IDENTITY = "com.github.uiautomator.ACTION_IDENTIFY";
     public static final String EXTRA_SERIAL = "serial";
 
+    @SuppressLint({"MissingPermission", "HardwareIds"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,9 +45,9 @@ public class IdentifyActivity extends Activity {
             activityTheme = extras.getString("theme").toUpperCase();
         }
         Log.i(TAG, "theme " + activityTheme);
-        Float brightness = 0.1f;
-        Integer backgroundColor = Color.BLACK;
-        if (activityTheme != null && "RED".equals(activityTheme)) {
+        float brightness = 0.1f;
+        int backgroundColor = Color.BLACK;
+        if ("RED".equals(activityTheme)) {
             backgroundColor = Color.RED;
             brightness = 1.0f;
         }

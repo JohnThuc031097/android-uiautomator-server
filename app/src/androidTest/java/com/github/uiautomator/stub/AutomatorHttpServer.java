@@ -23,7 +23,7 @@
 
 package com.github.uiautomator.stub;
 
-import androidx.test.InstrumentationRegistry;
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
 
 import com.googlecode.jsonrpc4j.JsonRpcServer;
@@ -77,7 +77,7 @@ public class AutomatorHttpServer extends NanoHTTPD {
                 } catch (NumberFormatException e) {
                 }
             }
-            File f = new File(InstrumentationRegistry.getTargetContext().getFilesDir(), "screenshot.png");
+            File f = new File(InstrumentationRegistry.getInstrumentation().getTargetContext().getFilesDir(), "screenshot.png");
             UiDevice.getInstance(InstrumentationRegistry.getInstrumentation()).takeScreenshot(f, scale, quality);
 
             try {

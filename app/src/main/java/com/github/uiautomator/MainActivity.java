@@ -15,7 +15,6 @@ import android.provider.Settings;
 import android.text.format.Formatter;
 import android.util.Log;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.TextView;
@@ -108,12 +107,7 @@ public class MainActivity extends Activity {
 
         findViewById(R.id.accessibility).setOnClickListener(v -> startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)));
 
-        findViewById(R.id.development_settings).setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS));
-            }
-        });
+        findViewById(R.id.development_settings).setOnClickListener(v -> startActivity(new Intent(Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)));
 
         Intent intent = getIntent();
         boolean isHide = intent.getBooleanExtra("hide", false);
@@ -134,191 +128,42 @@ public class MainActivity extends Activity {
         };
         Permissons4App.initPermissions(this, permissions);
     }
-
     @Override
     protected void onStart() {
         super.onStart();
     }
+    @SuppressLint("SetTextI18n")
+    @Override
+    protected void onResume() {
+        super.onResume();
+        checkAtxAgentStatus(null);
+        checkUiautomatorStatus(null);
+
+        tvInStorage.setText(Formatter.formatFileSize(this, MemoryManager.getAvailableInternalMemorySize()) + "/" + Formatter.formatFileSize(this, MemoryManager.getTotalExternalMemorySize()));
+        checkNetworkAddress(null);
+    }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        Permissons4App.handleRequestPermissionsResult(requestCode, permissions, grantResults);
+    protected void onRestart() {
+        super.onRestart();
     }
 
-    public void showFloatWindow(View view) {
-
-        boolean floatEnabled = FloatWindowManager.getInstance().checkFloatPermission(MainActivity.this);
-        if (!floatEnabled) {
-            Log.i(TAG, "float permission not checked");
-            return;
-        }
-        if (floatView == null) {
-            floatView = new FloatView(MainActivity.this);
-        }
-        floatView.show();
+    @Override
+    public void onBackPressed() {
+        moveTaskToBack(true);
     }
 
-    public void stopUiautomator(View view) {
-        Request request = new Request.Builder()
-                .url(ATX_AGENT_URL + "/uiautomator")
-                .delete()
-                .build();
-        okhttpManager.newCall(request, new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-                uiToaster("UIAutomator already stopped ");
-                checkUiautomatorStatus(null);
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                checkUiautomatorStatus(null);
-            }
-        });
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // must unbind service, otherwise it will leak memory
+        // connection no need to set it to null
+        Log.i(TAG, "unbind service");
     }
 
-    public void startUiautomator(View view) {
-        Request request = new Request.Builder()
-                .url(ATX_AGENT_URL + "/uiautomator")
-                .post(RequestBody.create(new byte[0]))
-                .build();
-        okhttpManager.newCall(request, new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-                uiToaster("UIAutomator not starting");
-                checkUiautomatorStatus(null);
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                uiToaster("UIAutomator started");
-                checkUiautomatorStatus(null);
-            }
-        });
-    }
-
-    private void uiToaster(final String msg) {
-        runOnUiThread(() -> Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show());
-    }
-
-
-    public void dismissFloatWindow(View view) {
-        if (floatView != null) {
-            Log.d(TAG, "remove floatView immediate");
-            floatView.hide();
-        }
-    }
-
-    public void atxAgentStopConfirm(View view) {
-        AlertDialog.Builder localBuilder = new AlertDialog.Builder(this);
-        localBuilder.setTitle("Stopping AtxAgent");
-        localBuilder.setMessage("ATX-Agent must be started via adb next time");
-        localBuilder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                stopAtxAgent();
-            }
-        });
-        localBuilder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-        localBuilder.show();
-    }
-
-    private void stopAtxAgent() {
-        Request request = new Request.Builder()
-                .url(ATX_AGENT_URL + "/stop")
-                .get()
-                .build();
-        okhttpManager.newCall(request, new Callback() {
-
-            @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-                uiToaster("AtxAgent already stopped");
-                checkAtxAgentStatus(null);
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) {
-                uiToaster("AtxAgent stopped");
-                checkAtxAgentStatus(null);
-            }
-        });
-    }
-
-    public void checkAtxAgentStatus(View view) {
-        Request request = new Request.Builder()
-                .url(ATX_AGENT_URL + "/ping")
-                .get()
-                .build();
-        okhttpManager.newCall(request, new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-                runOnUiThread(new TextViewSetter(tvAgentStatus, "AtxAgent Stopped"));
-                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) {
-                runOnUiThread(new TextViewSetter(tvAgentStatus, "AtxAgent Running"));
-                try {
-                    assert response.body() != null;
-                    runOnUiThread(new TextViewSetter(tvServiceMessage, response.body().string()));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
-                }
-            }
-        });
-    }
-
-    public void testUiautomator(View view) {
-        String json = "{" +
-                "            \"jsonrpc\": \"2.0\",\n" +
-                "            \"id\": \"14d3bbb25360373624ea5b343c5abb1f\", \n" +
-                "            \"method\": \"dumpWindowHierarchy\",\n" +
-                "            \"params\": [false]\n" +
-                "        }";
-        Request request = new Request.Builder()
-                .url(ATX_AGENT_URL + "/jsonrpc/0")
-                .post(RequestBody.create(json,MediaType.parse("application/json")))
-                .build();
-        okhttpManager.newCall(request, new Callback() {
-
-            @Override
-            public void onFailure(Call call, IOException e) {
-                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) {
-                try {
-                    if (response.body() == null || !response.isSuccessful()) {
-                        runOnUiThread(new TextViewSetter(tvServiceMessage, "UIAutomator not responding!"));
-                        return;
-                    }
-                    String responseData = response.body().string();
-                    runOnUiThread(new TextViewSetter(tvServiceMessage, responseData));
-//                    JSONObject obj = new JSONObject(responseData);
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                    runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
-                }
-            }
-        });
-    }
-
+    //    =========================
+//    ====== UIAutomator ======
+//    =========================
     public void checkUiautomatorStatus(View view) {
         Request request = new Request.Builder()
                 .url(ATX_AGENT_URL + "/uiautomator")
@@ -362,17 +207,219 @@ public class MainActivity extends Activity {
             }
         });
     }
+    public void stopUiautomator(View view) {
+        Request request = new Request.Builder()
+                .url(ATX_AGENT_URL + "/uiautomator")
+                .delete()
+                .build();
+        okhttpManager.newCall(request, new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+                uiToaster("UIAutomator already stopped ");
+                checkUiautomatorStatus(null);
+            }
 
-    @SuppressLint("SetTextI18n")
-    @Override
-    protected void onResume() {
-        super.onResume();
-        checkAtxAgentStatus(null);
-        checkUiautomatorStatus(null);
-
-        tvInStorage.setText(Formatter.formatFileSize(this, MemoryManager.getAvailableInternalMemorySize()) + "/" + Formatter.formatFileSize(this, MemoryManager.getTotalExternalMemorySize()));
-        checkNetworkAddress(null);
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                checkUiautomatorStatus(null);
+            }
+        });
     }
+    public void startUiautomator(View view) {
+        Request request = new Request.Builder()
+                .url(ATX_AGENT_URL + "/uiautomator")
+                .post(RequestBody.create(new byte[0]))
+                .build();
+        okhttpManager.newCall(request, new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+                uiToaster("UIAutomator not starting");
+                checkUiautomatorStatus(null);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                uiToaster("UIAutomator started");
+                checkUiautomatorStatus(null);
+            }
+        });
+    }
+    public void testUiautomator(View view) {
+        String json = "{" +
+                "            \"jsonrpc\": \"2.0\",\n" +
+                "            \"id\": \"14d3bbb25360373624ea5b343c5abb1f\", \n" +
+                "            \"method\": \"dumpWindowHierarchy\",\n" +
+                "            \"params\": [false]\n" +
+                "        }";
+        Request request = new Request.Builder()
+                .url(ATX_AGENT_URL + "/jsonrpc/0")
+                .post(RequestBody.create(json,MediaType.parse("application/json")))
+                .build();
+        okhttpManager.newCall(request, new Callback() {
+
+            @Override
+            public void onFailure(Call call, IOException e) {
+                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) {
+                try {
+                    if (response.body() == null || !response.isSuccessful()) {
+                        runOnUiThread(new TextViewSetter(tvServiceMessage, "UIAutomator not responding!"));
+                        return;
+                    }
+                    String responseData = response.body().string();
+                    runOnUiThread(new TextViewSetter(tvServiceMessage, responseData));
+//                    JSONObject obj = new JSONObject(responseData);
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                    runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+                }
+            }
+        });
+    }
+    public void clipboardUiautomator(View view){
+
+    }
+    public void screenshotUiautomator(View view){
+        Request request = new Request.Builder()
+                .url(ATX_AGENT_URL + "/screenshot/0")
+                .get()
+                .build();
+        okhttpManager.newCall(request, new Callback() {
+
+            @Override
+            public void onFailure(Call call, IOException e) {
+                runOnUiThread(new TextViewSetter(tvAutomatorStatus, "Uiautomator: Screenshot failed!!!"));
+                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) {
+                try {
+                    if (response.body() == null || !response.isSuccessful()) {
+                        this.onFailure(call, new IOException("Screenshot not responding!"));
+                        return;
+                    }
+                    String responseData = response.body().string();
+                    runOnUiThread(new TextViewSetter(tvAutomatorStatus, "Screenshot actioning"));
+                    runOnUiThread(new TextViewSetter(tvServiceMessage, responseData));
+                    try {
+                        Class.forName("com.github.uiautomator.stub.Stub");
+                        runOnUiThread(new TextViewSetter(tvAutomatorMode, "Screenshot saved"));
+                    } catch (ClassNotFoundException e) {
+                        // TODO The pop-up box should be forced to exit after onResume check
+                        runOnUiThread(new TextViewSetter(tvAutomatorMode, "Unable to serve non-am instrument startup", Color.RED));
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+                }
+            }
+        });
+    }
+
+//    ======================
+//    ===== ATX-Agent ======
+//    ======================
+
+    public void checkAtxAgentStatus(View view) {
+        Request request = new Request.Builder()
+                .url(ATX_AGENT_URL + "/ping")
+                .get()
+                .build();
+        okhttpManager.newCall(request, new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+                runOnUiThread(new TextViewSetter(tvAgentStatus, "AtxAgent Stopped"));
+                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) {
+                runOnUiThread(new TextViewSetter(tvAgentStatus, "AtxAgent Running"));
+                try {
+                    runOnUiThread(new TextViewSetter(tvServiceMessage, response.body().string()));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+                }
+            }
+        });
+    }
+    private void stopAtxAgent() {
+        Request request = new Request.Builder()
+                .url(ATX_AGENT_URL + "/stop")
+                .get()
+                .build();
+        okhttpManager.newCall(request, new Callback() {
+
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+                uiToaster("AtxAgent already stopped");
+                checkAtxAgentStatus(null);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) {
+                uiToaster("AtxAgent stopped");
+                checkAtxAgentStatus(null);
+            }
+        });
+    }
+    public void atxAgentStopConfirm(View view) {
+        AlertDialog.Builder localBuilder = new AlertDialog.Builder(this);
+        localBuilder.setTitle("Stopping AtxAgent");
+        localBuilder.setMessage("ATX-Agent must be started via adb next time");
+        localBuilder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                stopAtxAgent();
+            }
+        });
+        localBuilder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        localBuilder.show();
+    }
+
+//    =====================
+//    ==== Float Window ===
+//    =====================
+
+    public void showFloatWindow(View view) {
+
+        boolean floatEnabled = FloatWindowManager.getInstance().checkFloatPermission(MainActivity.this);
+        if (!floatEnabled) {
+            Log.i(TAG, "float permission not checked");
+            return;
+        }
+        if (floatView == null) {
+            floatView = new FloatView(MainActivity.this);
+        }
+        floatView.show();
+    }
+    public void dismissFloatWindow(View view) {
+        if (floatView != null) {
+            Log.d(TAG, "remove floatView immediate");
+            floatView.hide();
+        }
+    }
+
+//    =====================
+//    =====================
+//    =====================
 
     public void checkNetworkAddress(View v) {
         WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
@@ -381,23 +428,12 @@ public class MainActivity extends Activity {
         textViewIP.setText(ipStr);
         textViewIP.setTextColor(Color.BLUE);
     }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
+    private void uiToaster(final String msg) {
+        runOnUiThread(() -> Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show());
     }
-
     @Override
-    public void onBackPressed() {
-        moveTaskToBack(true);
-    }
-
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        // must unbind service, otherwise it will leak memory
-        // connection no need to set it to null
-        Log.i(TAG, "unbind service");
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        Permissons4App.handleRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }
