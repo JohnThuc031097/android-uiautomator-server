@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.Settings;
 import android.text.format.Formatter;
 import android.util.Log;
@@ -31,7 +32,10 @@ import com.github.uiautomator.util.Permissons4App;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -124,7 +128,8 @@ public class MainActivity extends Activity {
                 Manifest.permission.READ_PHONE_NUMBERS,
                 Manifest.permission.READ_SMS,
                 Manifest.permission.RECEIVE_SMS,
-                Manifest.permission.READ_LOGS
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE
         };
         Permissons4App.initPermissions(this, permissions);
     }
@@ -284,9 +289,6 @@ public class MainActivity extends Activity {
             }
         });
     }
-    public void clipboardUiautomator(View view){
-
-    }
     public void screenshotUiautomator(View view){
         Request request = new Request.Builder()
                 .url(ATX_AGENT_URL + "/screenshot/0")
@@ -296,7 +298,6 @@ public class MainActivity extends Activity {
 
             @Override
             public void onFailure(Call call, IOException e) {
-                runOnUiThread(new TextViewSetter(tvAutomatorStatus, "Uiautomator: Screenshot failed!!!"));
                 runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
             }
 
@@ -304,19 +305,61 @@ public class MainActivity extends Activity {
             public void onResponse(Call call, Response response) {
                 try {
                     if (response.body() == null || !response.isSuccessful()) {
-                        this.onFailure(call, new IOException("Screenshot not responding!"));
+                        this.onFailure(call, new IOException("Uiautomator not responding!"));
+                        return;
+                    }
+                    InputStream res = response.body().byteStream();
+                    String nameFolder = "screenshot";
+                    String nameFile = "test-" + (System.currentTimeMillis()/1000) + ".png";
+                    if (createFile(res,nameFolder, nameFile)){
+                        runOnUiThread(new TextViewSetter(tvAutomatorStatus, "Screenshot actioning"));
+                        runOnUiThread(new TextViewSetter(tvServiceMessage, "Image saved: " + nameFolder +'/'+ nameFile));
+                        try {
+                            Class.forName("com.github.uiautomator.stub.Stub");
+                            runOnUiThread(new TextViewSetter(tvAutomatorMode, "Screenshot saved"));
+                        } catch (ClassNotFoundException e) {
+                            // TODO The pop-up box should be forced to exit after onResume check
+                            runOnUiThread(new TextViewSetter(tvAutomatorMode, "Unable to serve non-am instrument startup", Color.RED));
+                        }
+                    }else {
+                        runOnUiThread(new TextViewSetter(tvServiceMessage, "Screenshot saved failed!!!"));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+                }
+            }
+        });
+    }
+    public void clipboardUiautomator(View view){
+
+    }
+    public void deviceUiautomator(View view){
+        String json = "{" +
+                "            \"jsonrpc\": \"2.0\",\n" +
+                "            \"id\": \"14d3bbb25360373624ea5b343c5abb1f\", \n" +
+                "            \"method\": \"deviceInfo\" \n" +
+                "        }";
+        Request request = new Request.Builder()
+                .url(ATX_AGENT_URL + "/jsonrpc/0")
+                .post(RequestBody.create(json,MediaType.parse("application/json")))
+                .build();
+        okhttpManager.newCall(request, new Callback() {
+
+            @Override
+            public void onFailure(Call call, IOException e) {
+                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) {
+                try {
+                    if (response.body() == null || !response.isSuccessful()) {
+                        runOnUiThread(new TextViewSetter(tvServiceMessage, "UIAutomator not responding!"));
                         return;
                     }
                     String responseData = response.body().string();
-                    runOnUiThread(new TextViewSetter(tvAutomatorStatus, "Screenshot actioning"));
                     runOnUiThread(new TextViewSetter(tvServiceMessage, responseData));
-                    try {
-                        Class.forName("com.github.uiautomator.stub.Stub");
-                        runOnUiThread(new TextViewSetter(tvAutomatorMode, "Screenshot saved"));
-                    } catch (ClassNotFoundException e) {
-                        // TODO The pop-up box should be forced to exit after onResume check
-                        runOnUiThread(new TextViewSetter(tvAutomatorMode, "Unable to serve non-am instrument startup", Color.RED));
-                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                     runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
@@ -324,7 +367,6 @@ public class MainActivity extends Activity {
             }
         });
     }
-
 //    ======================
 //    ===== ATX-Agent ======
 //    ======================
@@ -435,5 +477,24 @@ public class MainActivity extends Activity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         Permissons4App.handleRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+    private boolean createFile(InputStream inp, String nameFolder, String nameFile){
+        try {
+            String path = Environment.getExternalStorageDirectory() + "/axt-agent/" + nameFolder;
+            new File(path).mkdirs();
+            FileOutputStream output = new FileOutputStream(path +'/'+ nameFile);
+            int bufferSize = 1024;
+            byte[] buffer = new byte[bufferSize];
+            int len = 0;
+            while ((len = inp.read(buffer)) != -1) {
+                output.write(buffer, 0, len);
+            }
+            output.close();
+            return true;
+        }catch (Exception e){
+            e.printStackTrace();
+            runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+        }
+        return false;
     }
 }
