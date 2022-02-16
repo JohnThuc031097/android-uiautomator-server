@@ -105,6 +105,12 @@
                 android:layout_weight="1"
                 android:onClick="deviceUiautomator"
                 android:text="@string/device_uiautomator" />
+            <Button
+                style="@style/SelectButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:onClick="getObjectUiautomator"
+                android:text="@string/getObject_uiautomator" />
 
         </LinearLayout>
 

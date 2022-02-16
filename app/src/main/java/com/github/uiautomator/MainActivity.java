@@ -332,7 +332,37 @@ public class MainActivity extends Activity {
         });
     }
     public void clipboardUiautomator(View view){
+        String json = "{" +
+                "            \"jsonrpc\": \"2.0\",\n" +
+                "            \"id\": \"14d3bbb25360373624ea5b343c5abb1f\", \n" +
+                "            \"method\": \"getClipboard\" \n" +
+                "        }";
+        Request request = new Request.Builder()
+                .url(ATX_AGENT_URL + "/jsonrpc/0")
+                .post(RequestBody.create(json,MediaType.parse("application/json")))
+                .build();
+        okhttpManager.newCall(request, new Callback() {
 
+            @Override
+            public void onFailure(Call call, IOException e) {
+                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) {
+                try {
+                    if (response.body() == null || !response.isSuccessful()) {
+                        runOnUiThread(new TextViewSetter(tvServiceMessage, "UIAutomator not responding!"));
+                        return;
+                    }
+                    String responseData = response.body().string();
+                    runOnUiThread(new TextViewSetter(tvServiceMessage, responseData));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+                }
+            }
+        });
     }
     public void deviceUiautomator(View view){
         String json = "{" +
@@ -360,6 +390,44 @@ public class MainActivity extends Activity {
                     }
                     String responseData = response.body().string();
                     runOnUiThread(new TextViewSetter(tvServiceMessage, responseData));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+                }
+            }
+        });
+    }
+    public void getObjectUiautomator(View view){
+        String json = "{" +
+                "            \"jsonrpc\": \"2.0\",\n" +
+                "            \"id\": \"14d3bbb25360373624ea5b343c5abb1f\", \n" +
+                "            \"method\": \"getUiObject\",\n" +
+                "            \"params\": [\"new UiSelector().text('CHECK')\"]\n" +
+                "        }";
+        Request request = new Request.Builder()
+                .url(ATX_AGENT_URL + "/jsonrpc/0")
+                .post(RequestBody.create(json,MediaType.parse("application/json")))
+                .build();
+        okhttpManager.newCall(request, new Callback() {
+
+            @Override
+            public void onFailure(Call call, IOException e) {
+                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) {
+                try {
+                    if (response.body() == null || !response.isSuccessful()) {
+                        runOnUiThread(new TextViewSetter(tvServiceMessage, "UIAutomator not responding!"));
+                        return;
+                    }
+                    String responseData = response.body().string();
+                    runOnUiThread(new TextViewSetter(tvServiceMessage, responseData));
+//                    JSONObject obj = new JSONObject(responseData);
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                    runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
                 } catch (IOException e) {
                     e.printStackTrace();
                     runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
