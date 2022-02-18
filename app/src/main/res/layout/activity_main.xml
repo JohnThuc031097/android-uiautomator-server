@@ -24,6 +24,18 @@
                 style="@style/SelectButton"
                 android:layout_width="0dp"
                 android:layout_weight="1"
+                android:onClick="startAtxAgentStatus"
+                android:text="@string/start_atxagent" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+            <Button
+                style="@style/SelectButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
                 android:onClick="checkAtxAgentStatus"
                 android:text="@string/check_atxagent" />
 

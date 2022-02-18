@@ -165,10 +165,22 @@ public class MainActivity extends Activity {
         // connection no need to set it to null
         Log.i(TAG, "unbind service");
     }
-
-    //    =========================
+//    =========================
 //    ====== UIAutomator ======
 //    =========================
+    public void startAtxAgentStatus(View view){
+        runOnUiThread(() -> {
+            try {
+                runOnUiThread(new TextViewSetter(tvAgentStatus, "ATX-Agent starting"));
+                Runtime.getRuntime().exec("/data/local/tmp/atx-agent server --stop");
+                Runtime.getRuntime().exec("/data/local/tmp/atx-agent server --nouia -d --addr 127.0.0.1:7912");
+                runOnUiThread(new TextViewSetter(tvAgentStatus, "ATX-Agent started"));
+            } catch (IOException e) {
+                e.printStackTrace();
+                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+            }
+        });
+    }
     public void checkUiautomatorStatus(View view) {
         Request request = new Request.Builder()
                 .url(ATX_AGENT_URL + "/uiautomator")
