@@ -38,7 +38,7 @@ import android.os.SystemClock;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
-import androidx.test.InstrumentationRegistry;
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.Configurator;
 import androidx.test.uiautomator.Direction;
 import androidx.test.uiautomator.StaleObjectException;
@@ -90,7 +90,7 @@ public class AutomatorServiceImpl implements AutomatorService {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                AutomatorServiceImpl.this.clipboard = (ClipboardManager) InstrumentationRegistry.getTargetContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                AutomatorServiceImpl.this.clipboard = (ClipboardManager) InstrumentationRegistry.getInstrumentation().getTargetContext().getSystemService(Context.CLIPBOARD_SERVICE);
             }
         });
         // play music when loaded
@@ -164,12 +164,7 @@ public class AutomatorServiceImpl implements AutomatorService {
     @Override
     public boolean makeToast(final String text, final int duration) {
 
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                ToastHelper.makeText(InstrumentationRegistry.getTargetContext(), text, duration).show();
-            }
-        });
+        handler.post(() -> ToastHelper.makeText(InstrumentationRegistry.getInstrumentation().getTargetContext(), text, duration).show());
         return true;
     }
 
@@ -319,11 +314,10 @@ public class AutomatorServiceImpl implements AutomatorService {
      * @param scale    scale the screenshot down if needed; 1.0f for original size
      * @param quality  quality of the PNG compression; range: 0-100
      * @return the file name of the screenshot. null if failed.
-     * @throws NotImplementedException
      */
     @Override
-    public String takeScreenshot(String filename, float scale, int quality) throws NotImplementedException {
-        File f = new File(InstrumentationRegistry.getTargetContext().getFilesDir(), filename);
+    public String takeScreenshot(String filename, float scale, int quality) {
+        File f = new File(InstrumentationRegistry.getInstrumentation().getTargetContext().getFilesDir(), filename);
         device.takeScreenshot(f, scale, quality);
         if (f.exists()) return f.getAbsolutePath();
         return null;
@@ -1367,10 +1361,9 @@ public class AutomatorServiceImpl implements AutomatorService {
      *
      * @param selector Selector of the UiObject
      * @return A string ID represent the returned UiObject.
-     * @throws UiObjectNotFoundException
      */
     @Override
-    public String getUiObject(Selector selector) throws UiObjectNotFoundException {
+    public String getUiObject(Selector selector) {
         return addUiObject(device.findObject(selector.toUiSelector()));
     }
 

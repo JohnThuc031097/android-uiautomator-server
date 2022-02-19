@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
 import android.text.format.Formatter;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -32,7 +33,9 @@ import com.github.uiautomator.util.Permissons4App;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -169,17 +172,17 @@ public class MainActivity extends Activity {
 //    ====== UIAutomator ======
 //    =========================
     public void startAtxAgentStatus(View view){
-        runOnUiThread(() -> {
-            try {
-                runOnUiThread(new TextViewSetter(tvAgentStatus, "ATX-Agent starting"));
-                Runtime.getRuntime().exec("/data/local/tmp/atx-agent server --stop");
-                Runtime.getRuntime().exec("/data/local/tmp/atx-agent server --nouia -d --addr 127.0.0.1:7912");
-                runOnUiThread(new TextViewSetter(tvAgentStatus, "ATX-Agent started"));
-            } catch (IOException e) {
-                e.printStackTrace();
-                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
-            }
-        });
+//        runOnUiThread(() -> {
+//            try {
+//                runOnUiThread(new TextViewSetter(tvAgentStatus, "ATX-Agent starting"));
+//                Runtime.getRuntime().exec("/data/local/tmp/atx-agent server --stop");
+//                Runtime.getRuntime().exec("/data/local/tmp/atx-agent server --nouia -d --addr 127.0.0.1:7912");
+//                runOnUiThread(new TextViewSetter(tvAgentStatus, "ATX-Agent started"));
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+//            }
+//        });
     }
     public void checkUiautomatorStatus(View view) {
         Request request = new Request.Builder()
@@ -302,9 +305,25 @@ public class MainActivity extends Activity {
         });
     }
     public void screenshotUiautomator(View view){
+//        Request request = new Request.Builder()
+//                .url(ATX_AGENT_URL + "/screenshot/0")
+//                .get()
+//                .build();
+        String path = Environment.getExternalStorageDirectory() + "/atx-agent/screenshot";
+//        new File(path).mkdirs();
+        String name = "test-" + (System.currentTimeMillis()/1000);
+        String json = "{" +
+                "            \"jsonrpc\": \"2.0\",\n" +
+                "            \"id\": \"14d3bbb25360373624ea5b343c5abb1f\", \n" +
+                "            \"method\": \"screenshot\",\n" +
+                "            \"params\": {" +
+                "                           \"path\": \""+ path +"\", \n" +
+                "                           \"name\": \""+ name +"\" \n" +
+                "                           }" +
+                "        }";
         Request request = new Request.Builder()
-                .url(ATX_AGENT_URL + "/screenshot/0")
-                .get()
+                .url(ATX_AGENT_URL + "/jsonrpc/0")
+                .post(RequestBody.create(json,MediaType.parse("application/json")))
                 .build();
         okhttpManager.newCall(request, new Callback() {
 
@@ -313,6 +332,7 @@ public class MainActivity extends Activity {
                 runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
             }
 
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onResponse(Call call, Response response) {
                 try {
@@ -320,21 +340,13 @@ public class MainActivity extends Activity {
                         this.onFailure(call, new IOException("Uiautomator not responding!"));
                         return;
                     }
-                    InputStream res = response.body().byteStream();
-                    String nameFolder = "screenshot";
-                    String nameFile = "test-" + (System.currentTimeMillis()/1000) + ".png";
-                    if (createFile(res,nameFolder, nameFile)){
-                        runOnUiThread(new TextViewSetter(tvAutomatorStatus, "Screenshot actioning"));
-                        runOnUiThread(new TextViewSetter(tvServiceMessage, "Image saved: " + nameFolder +'/'+ nameFile));
-                        try {
-                            Class.forName("com.github.uiautomator.stub.Stub");
-                            runOnUiThread(new TextViewSetter(tvAutomatorMode, "Screenshot saved"));
-                        } catch (ClassNotFoundException e) {
-                            // TODO The pop-up box should be forced to exit after onResume check
-                            runOnUiThread(new TextViewSetter(tvAutomatorMode, "Unable to serve non-am instrument startup", Color.RED));
-                        }
-                    }else {
-                        runOnUiThread(new TextViewSetter(tvServiceMessage, "Screenshot saved failed!!!"));
+                    runOnUiThread(new TextViewSetter(tvServiceMessage, "Image saved: " + response.body().byteString()));
+                    try {
+                        Class.forName("com.github.uiautomator.stub.Stub");
+                        runOnUiThread(new TextViewSetter(tvAutomatorMode, "Screenshot saved"));
+                    } catch (ClassNotFoundException e) {
+                        // TODO The pop-up box should be forced to exit after onResume check
+                        runOnUiThread(new TextViewSetter(tvAutomatorMode, "Unable to serve non-am instrument startup", Color.RED));
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -412,9 +424,9 @@ public class MainActivity extends Activity {
     public void getObjectUiautomator(View view){
         String json = "{" +
                 "            \"jsonrpc\": \"2.0\",\n" +
-                "            \"id\": \"14d3bbb25360373624ea5b343c5abb1f\", \n" +
-                "            \"method\": \"getUiObject\",\n" +
-                "            \"params\": [\"new UiSelector().text('CHECK')\"]\n" +
+                "            \"id\": \"14d3bbb25360373624ea5b343c5abb1f\",\n" +
+                "            \"method\": \"makeToast\",\n" +
+                "            \"params\": [\"Hello\", 1]\n" +
                 "        }";
         Request request = new Request.Builder()
                 .url(ATX_AGENT_URL + "/jsonrpc/0")
@@ -436,10 +448,6 @@ public class MainActivity extends Activity {
                     }
                     String responseData = response.body().string();
                     runOnUiThread(new TextViewSetter(tvServiceMessage, responseData));
-//                    JSONObject obj = new JSONObject(responseData);
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                    runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
                 } catch (IOException e) {
                     e.printStackTrace();
                     runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
@@ -574,6 +582,28 @@ public class MainActivity extends Activity {
         }catch (Exception e){
             e.printStackTrace();
             runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+        }
+        return false;
+    }
+    public static boolean saveImage(String imageData,String nameFolder, String nameFile) throws IOException {
+        final byte[] imgBytesData = Base64.decode(imageData, Base64.DEFAULT);
+
+        String path = Environment.getExternalStorageDirectory() + "/axt-agent/" + nameFolder;
+        new File(path).mkdirs();
+        BufferedOutputStream bufferedOutputStream = null;
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(path +'/'+ nameFile);
+            bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
+            bufferedOutputStream.write(imgBytesData);
+            bufferedOutputStream.close();
+            return true;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }finally {
+            assert bufferedOutputStream != null;
+            bufferedOutputStream.close();
         }
         return false;
     }

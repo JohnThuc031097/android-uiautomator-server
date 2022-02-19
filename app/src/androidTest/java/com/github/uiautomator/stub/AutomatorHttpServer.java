@@ -62,7 +62,15 @@ public class AutomatorHttpServer extends NanoHTTPD {
             return newFixedLengthResponse("Server stopped!!!");
         } else if ("/ping".equals(uri)) {
             return newFixedLengthResponse("pong");
-        } else if ("/screenshot/0".equals(uri)) {
+        } else if ("/screenshot".equals(uri)) {
+            String path = "screenshot";
+            if (params.containsKey("path")){
+                path = params.get("path");
+            }
+            String name = "test";
+            if (params.containsKey("name")){
+                name = params.get("name");
+            }
             float scale = 1.0f;
             if (params.containsKey("scale")) {
                 try {
@@ -77,7 +85,8 @@ public class AutomatorHttpServer extends NanoHTTPD {
                 } catch (NumberFormatException e) {
                 }
             }
-            File f = new File(InstrumentationRegistry.getInstrumentation().getTargetContext().getFilesDir(), "screenshot.png");
+//            File f = new File(InstrumentationRegistry.getInstrumentation().getTargetContext().getFilesDir(), "screenshot.png");
+            File f = new File(path, name + ".png");
             UiDevice.getInstance(InstrumentationRegistry.getInstrumentation()).takeScreenshot(f, scale, quality);
 
             try {
@@ -105,5 +114,4 @@ public class AutomatorHttpServer extends NanoHTTPD {
         } else
             return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not Found!!!");
     }
-
 }
