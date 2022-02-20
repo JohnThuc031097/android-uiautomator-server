@@ -98,12 +98,6 @@
                 android:onClick="clipboardUiautomator"
                 android:text="@string/clipboard_uiautomator" />
 
-            <Button
-                style="@style/SelectButton"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:onClick="screenshotUiautomator"
-                android:text="@string/screenshot_uiautomator" />
         </LinearLayout>
 
         <LinearLayout

@@ -35,6 +35,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.os.SystemClock;
+import android.util.Base64;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
@@ -58,7 +59,6 @@ import com.github.uiautomator.stub.watcher.PressKeysWatcher;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Timer;
@@ -87,12 +87,7 @@ public class AutomatorServiceImpl implements AutomatorService {
         device = UiDevice.getInstance(mInstrumentation);
         touchController = new TouchController(mInstrumentation);
 
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                AutomatorServiceImpl.this.clipboard = (ClipboardManager) InstrumentationRegistry.getInstrumentation().getTargetContext().getSystemService(Context.CLIPBOARD_SERVICE);
-            }
-        });
+        handler.post(() -> AutomatorServiceImpl.this.clipboard = (ClipboardManager) InstrumentationRegistry.getInstrumentation().getTargetContext().getSystemService(Context.CLIPBOARD_SERVICE));
         // play music when loaded
         soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
             @Override
@@ -324,26 +319,21 @@ public class AutomatorServiceImpl implements AutomatorService {
     }
 
     @Override
-    public String takeScreenshot(float scale, int quality) throws NotImplementedException {
+    public String takeScreenshot(float scale, int quality) {
         Bitmap screenshot = getUiAutomation().takeScreenshot();
         if (screenshot == null) {
             return null;
         }
 
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        try {
-            screenshot.compress(Bitmap.CompressFormat.JPEG, quality, bos);
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            screenshot.compress(Bitmap.CompressFormat.PNG, quality, bos);
             bos.flush();
-            return Base64.getEncoder().encodeToString(bos.toByteArray());
+            return Base64.encodeToString(bos.toByteArray(), Base64.DEFAULT);
         } catch (IOException ioe) {
             Log.e("takeScreenshot error: " + ioe);
             return null;
         } finally {
-            try {
-                bos.close();
-            } catch (IOException ioe) {
-                // Ignore
-            }
+            // Ignore
             screenshot.recycle();
         }
     }

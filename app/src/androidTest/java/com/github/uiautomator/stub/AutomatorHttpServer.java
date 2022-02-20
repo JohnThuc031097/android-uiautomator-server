@@ -40,6 +40,7 @@ import java.util.Map;
 import fi.iki.elonen.NanoHTTPD;
 
 public class AutomatorHttpServer extends NanoHTTPD {
+    private AutomatorServiceImpl ui2 = new AutomatorServiceImpl();
 
     public AutomatorHttpServer(int port) {
         super(port);
@@ -62,11 +63,15 @@ public class AutomatorHttpServer extends NanoHTTPD {
             return newFixedLengthResponse("Server stopped!!!");
         } else if ("/ping".equals(uri)) {
             return newFixedLengthResponse("pong");
-        } else if ("/screenshot".equals(uri)) {
-            String path = "screenshot";
-            if (params.containsKey("path")){
-                path = params.get("path");
+        } else if ("/getUiObject/0".equals(uri)){
+            String text = "";
+            if (params.containsKey("text")){
+                text = params.get("text");
             }
+            Selector selector = new Selector();
+            selector.setText(text);
+            return newFixedLengthResponse(Response.Status.OK, MIME_PLAINTEXT, text);
+        } else if ("/screenshot/0".equals(uri)) {
             String name = "test";
             if (params.containsKey("name")){
                 name = params.get("name");
@@ -85,10 +90,8 @@ public class AutomatorHttpServer extends NanoHTTPD {
                 } catch (NumberFormatException e) {
                 }
             }
-//            File f = new File(InstrumentationRegistry.getInstrumentation().getTargetContext().getFilesDir(), "screenshot.png");
-            File f = new File(path, name + ".png");
+            File f = new File(InstrumentationRegistry.getInstrumentation().getTargetContext().getFilesDir(), name);
             UiDevice.getInstance(InstrumentationRegistry.getInstrumentation()).takeScreenshot(f, scale, quality);
-
             try {
                 return newChunkedResponse(Response.Status.OK, "image/png", new FileInputStream(f));
             } catch (FileNotFoundException e) {

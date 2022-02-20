@@ -42,7 +42,6 @@
     <string name="check_uiautomator">check</string>
     <string name="test_uiautomator">test</string>
     <string name="clipboard_uiautomator">clipboard</string>
-    <string name="screenshot_uiautomator">screenshot</string>
     <string name="device_uiautomator">device</string>
     <string name="getObject_uiautomator">get object</string>
 <!--    -->
