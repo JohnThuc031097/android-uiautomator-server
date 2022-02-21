@@ -44,6 +44,7 @@
     <string name="clipboard_uiautomator">clipboard</string>
     <string name="device_uiautomator">device</string>
     <string name="getObject_uiautomator">get object</string>
+    <string name="getFunc_uiautomator">test func</string>
 <!--    -->
     <string name="barrier_free">accessibility</string>
     <string name="develop_mode">develop mode</string>

@@ -16,14 +16,11 @@ public class RotationAgent extends Thread {
 
     RotationAgent(String socketName) {
         this.socketName = socketName;
-        wm.watchRotation(new WindowManagerWrapper.RotationWatcher() {
-            @Override
-            public void onRotationChanged(int rotation) {
-                System.out.println(rotation + writer.toString());
-                if (writer != null) {
-                    writer.println(rotation * 90);
-                    writer.flush();
-                }
+        wm.watchRotation(rotation -> {
+            System.out.println(rotation + writer.toString());
+            if (writer != null) {
+                writer.println(rotation * 90);
+                writer.flush();
             }
         });
     }
@@ -38,12 +35,9 @@ public class RotationAgent extends Thread {
                 new Thread(() -> {
                     // 不停的往Client输出当前的Rotation信息
                     try {
-                        wm.watchRotation(new WindowManagerWrapper.RotationWatcher() {
-                            @Override
-                            public void onRotationChanged(int rotation) {
-                                writer.println(rotation * 90);
-                                writer.flush();
-                            }
+                        wm.watchRotation(rotation -> {
+                            writer.println(rotation * 90);
+                            writer.flush();
                         });
 
                         Scanner in = new Scanner(socket.getInputStream());

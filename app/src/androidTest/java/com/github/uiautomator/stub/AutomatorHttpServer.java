@@ -40,7 +40,6 @@ import java.util.Map;
 import fi.iki.elonen.NanoHTTPD;
 
 public class AutomatorHttpServer extends NanoHTTPD {
-    private AutomatorServiceImpl ui2 = new AutomatorServiceImpl();
 
     public AutomatorHttpServer(int port) {
         super(port);
@@ -51,6 +50,7 @@ public class AutomatorHttpServer extends NanoHTTPD {
     public void route(String uri, JsonRpcServer rpc) {
         router.put(uri, rpc);
     }
+
 
     @Override
     public Response serve(String uri, Method method,
@@ -63,17 +63,9 @@ public class AutomatorHttpServer extends NanoHTTPD {
             return newFixedLengthResponse("Server stopped!!!");
         } else if ("/ping".equals(uri)) {
             return newFixedLengthResponse("pong");
-        } else if ("/getUiObject/0".equals(uri)){
-            String text = "";
-            if (params.containsKey("text")){
-                text = params.get("text");
-            }
-            Selector selector = new Selector();
-            selector.setText(text);
-            return newFixedLengthResponse(Response.Status.OK, MIME_PLAINTEXT, text);
         } else if ("/screenshot/0".equals(uri)) {
             String name = "test";
-            if (params.containsKey("name")){
+            if (params.containsKey("name")) {
                 name = params.get("name");
             }
             float scale = 1.0f;

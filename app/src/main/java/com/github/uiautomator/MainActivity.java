@@ -363,9 +363,49 @@ public class MainActivity extends Activity {
         });
     }
     public void getObjectUiautomator(View view){
+        String json = "{" +
+                "            \"jsonrpc\": \"2.0\",\n" +
+                "            \"id\": \"1\", \n" +
+                "            \"method\": \"getUiObjectByText\",\n" +
+                "            \"params\": [\"TEST\"]\n" +
+                "        }";
         Request request = new Request.Builder()
-                .url(ATX_AGENT_URL + "/getUiObject/0?text=\"CHECK\"")
-                .get()
+                .url(ATX_AGENT_URL + "/jsonrpc/0")
+                .post(RequestBody.create(json,MediaType.parse("application/json")))
+                .build();
+        okhttpManager.newCall(request, new Callback() {
+
+            @Override
+            public void onFailure(Call call, IOException e) {
+                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) {
+                try {
+                    if (response.body() == null || !response.isSuccessful()) {
+                        runOnUiThread(new TextViewSetter(tvServiceMessage, "UIAutomator not responding!"));
+                        return;
+                    }
+                    String responseData = response.body().string();
+                    runOnUiThread(new TextViewSetter(tvServiceMessage, responseData));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+                }
+            }
+        });
+    }
+    public void testFuncUiautomator(View view) {
+        String json = "{" +
+                "            \"jsonrpc\": \"2.0\",\n" +
+                "            \"id\": \"1\", \n" +
+                "            \"method\": \"dumpWindowHierarchy\",\n" +
+                "            \"params\": [false]\n" +
+                "        }";
+        Request request = new Request.Builder()
+                .url(ATX_AGENT_URL + "/jsonrpc/0")
+                .post(RequestBody.create(json,MediaType.parse("application/json")))
                 .build();
         okhttpManager.newCall(request, new Callback() {
 

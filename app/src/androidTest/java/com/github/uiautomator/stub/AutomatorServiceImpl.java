@@ -89,12 +89,7 @@ public class AutomatorServiceImpl implements AutomatorService {
 
         handler.post(() -> AutomatorServiceImpl.this.clipboard = (ClipboardManager) InstrumentationRegistry.getInstrumentation().getTargetContext().getSystemService(Context.CLIPBOARD_SERVICE));
         // play music when loaded
-        soundPool.setOnLoadCompleteListener(new SoundPool.OnLoadCompleteListener() {
-            @Override
-            public void onLoadComplete(SoundPool soundPool, int sampleId, int status) {
-                soundPool.play(sampleId, 1, 1, 1, 0, 1);
-            }
-        });
+        soundPool.setOnLoadCompleteListener((soundPool, sampleId, status) -> soundPool.play(sampleId, 1, 1, 1, 0, 1));
 
         // Reset Configurator Wait Timeout
         Configurator configurator = Configurator.getInstance();
@@ -1355,6 +1350,16 @@ public class AutomatorServiceImpl implements AutomatorService {
     @Override
     public String getUiObject(Selector selector) {
         return addUiObject(device.findObject(selector.toUiSelector()));
+    }
+
+    @Override
+    public UiObject getUiObjectByText(String text) throws UiObjectNotFoundException {
+        Selector selector = new Selector();
+        selector.setText(text);
+        selector.deepSelector();
+        String idObject = getUiObject(selector);
+        if (exist(idObject)) return getUiObject(idObject);
+        return null;
     }
 
     /**
