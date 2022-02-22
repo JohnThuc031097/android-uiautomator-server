@@ -32,6 +32,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -160,22 +161,9 @@ public class MainActivity extends Activity {
         // connection no need to set it to null
         Log.i(TAG, "unbind service");
     }
-//    =========================
+    //    =========================
 //    ====== UIAutomator ======
 //    =========================
-    public void startAtxAgentStatus(View view){
-//        runOnUiThread(() -> {
-//            try {
-//                runOnUiThread(new TextViewSetter(tvAgentStatus, "ATX-Agent starting"));
-//                Runtime.getRuntime().exec("/data/local/tmp/atx-agent server --stop");
-//                Runtime.getRuntime().exec("/data/local/tmp/atx-agent server --nouia -d --addr 127.0.0.1:7912");
-//                runOnUiThread(new TextViewSetter(tvAgentStatus, "ATX-Agent started"));
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
-//            }
-//        });
-    }
     public void checkUiautomatorStatus(View view) {
         Request request = new Request.Builder()
                 .url(ATX_AGENT_URL + "/uiautomator")
@@ -366,8 +354,14 @@ public class MainActivity extends Activity {
         String json = "{" +
                 "            \"jsonrpc\": \"2.0\",\n" +
                 "            \"id\": \"1\", \n" +
-                "            \"method\": \"getUiObjectByText\",\n" +
-                "            \"params\": [\"TEST\"]\n" +
+                "            \"method\": \"setText\",\n" +
+                "            \"params\": [" +
+                "                           {" +
+                "                               \"resourceId\":\"com.github.uiautomator:id/in_storage\"," +
+                "                               \"className\":\"android.widget.TextView\"" +
+                "                           }," +
+                "                           \"TEST\"" +
+                "                        ]\n" +
                 "        }";
         Request request = new Request.Builder()
                 .url(ATX_AGENT_URL + "/jsonrpc/0")
@@ -433,7 +427,9 @@ public class MainActivity extends Activity {
 //    ======================
 //    ===== ATX-Agent ======
 //    ======================
+    public void startAtxAgentStatus(View view) {
 
+    }
     public void checkAtxAgentStatus(View view) {
         Request request = new Request.Builder()
                 .url(ATX_AGENT_URL + "/ping")

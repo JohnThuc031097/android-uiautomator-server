@@ -31,7 +31,7 @@ import androidx.test.uiautomator.UiObjectNotFoundException;
 import com.googlecode.jsonrpc4j.JsonRpcError;
 import com.googlecode.jsonrpc4j.JsonRpcErrors;
 
-public interface AutomatorService {
+public interface AutomatorService2 {
     final static int ERROR_CODE_BASE = -32000;
 
     /**
@@ -803,9 +803,6 @@ public interface AutomatorService {
 
     @JsonRpcErrors({@JsonRpcError(exception = UiObjectNotFoundException.class, code = ERROR_CODE_BASE - 2)})
     UiObject getUiObjectByText(String text) throws UiObjectNotFoundException;
-
-    Selector getSelectorByText(String text);
-
     /**
      * Remove the UiObject from memory.
      */

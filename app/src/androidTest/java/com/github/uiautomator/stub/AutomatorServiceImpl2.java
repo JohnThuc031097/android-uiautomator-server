@@ -67,7 +67,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-public class AutomatorServiceImpl implements AutomatorService {
+public class AutomatorServiceImpl2 implements AutomatorService2 {
 
     private final HashSet<String> watchers = new HashSet<>();
     private final ConcurrentHashMap<String, UiObject> uiObjects = new ConcurrentHashMap<>();
@@ -81,13 +81,13 @@ public class AutomatorServiceImpl implements AutomatorService {
     private TouchController touchController;
     ClipboardManager clipboard;
 
-    public AutomatorServiceImpl() {
+    public AutomatorServiceImpl2() {
         mInstrumentation = InstrumentationRegistry.getInstrumentation();
         uiAutomation = mInstrumentation.getUiAutomation();
         device = UiDevice.getInstance(mInstrumentation);
         touchController = new TouchController(mInstrumentation);
 
-        handler.post(() -> AutomatorServiceImpl.this.clipboard = (ClipboardManager) InstrumentationRegistry.getInstrumentation().getTargetContext().getSystemService(Context.CLIPBOARD_SERVICE));
+        handler.post(() -> AutomatorServiceImpl2.this.clipboard = (ClipboardManager) InstrumentationRegistry.getInstrumentation().getTargetContext().getSystemService(Context.CLIPBOARD_SERVICE));
         // play music when loaded
         soundPool.setOnLoadCompleteListener((soundPool, sampleId, status) -> soundPool.play(sampleId, 1, 1, 1, 0, 1));
 
@@ -1350,13 +1350,6 @@ public class AutomatorServiceImpl implements AutomatorService {
     @Override
     public String getUiObject(Selector selector) {
         return addUiObject(device.findObject(selector.toUiSelector()));
-    }
-
-    @Override
-    public Selector getSelectorByText(String text) {
-        Selector selector = new Selector();
-        selector.setText(text);
-        return selector.deepSelector();
     }
 
     @Override
