@@ -25,7 +25,6 @@ package com.github.uiautomator.stub;
 
 import android.os.RemoteException;
 
-import androidx.test.uiautomator.UiObject;
 import androidx.test.uiautomator.UiObjectNotFoundException;
 
 import com.googlecode.jsonrpc4j.JsonRpcError;
@@ -801,10 +800,7 @@ public interface AutomatorService {
     @JsonRpcErrors({@JsonRpcError(exception = UiObjectNotFoundException.class, code = ERROR_CODE_BASE - 2)})
     String getUiObject(Selector selector) throws UiObjectNotFoundException;
 
-    @JsonRpcErrors({@JsonRpcError(exception = UiObjectNotFoundException.class, code = ERROR_CODE_BASE - 2)})
-    UiObject getUiObjectByText(String text) throws UiObjectNotFoundException;
-
-    Selector getSelectorByText(String text);
+    String getSelector(String text);
 
     /**
      * Remove the UiObject from memory.

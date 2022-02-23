@@ -1353,20 +1353,10 @@ public class AutomatorServiceImpl implements AutomatorService {
     }
 
     @Override
-    public Selector getSelectorByText(String text) {
+    public String getSelector(String text){
         Selector selector = new Selector();
         selector.setText(text);
-        return selector.deepSelector();
-    }
-
-    @Override
-    public UiObject getUiObjectByText(String text) throws UiObjectNotFoundException {
-        Selector selector = new Selector();
-        selector.setText(text);
-        selector.deepSelector();
-        String idObject = getUiObject(selector);
-        if (exist(idObject)) return getUiObject(idObject);
-        return null;
+        return selector.toString();
     }
 
     /**

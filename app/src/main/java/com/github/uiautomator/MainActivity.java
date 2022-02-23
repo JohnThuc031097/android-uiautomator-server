@@ -42,7 +42,8 @@ import okhttp3.Response;
 
 public class MainActivity extends Activity {
     private final String TAG = "ATXMainActivity";
-    private final String ATX_AGENT_URL = "http://127.0.0.1:7912";
+    private final int PORT = 9008;
+    private final String ATX_AGENT_URL = "http://127.0.0.1:" + PORT;
 
     private TextView tvInStorage;
     private TextView textViewIP;
@@ -354,14 +355,8 @@ public class MainActivity extends Activity {
         String json = "{" +
                 "            \"jsonrpc\": \"2.0\",\n" +
                 "            \"id\": \"1\", \n" +
-                "            \"method\": \"setText\",\n" +
-                "            \"params\": [" +
-                "                           {" +
-                "                               \"resourceId\":\"com.github.uiautomator:id/in_storage\"," +
-                "                               \"className\":\"android.widget.TextView\"" +
-                "                           }," +
-                "                           \"TEST\"" +
-                "                        ]\n" +
+                "            \"method\": \"getSelector\",\n" +
+                "            \"params\": [\"TEST\"]" +
                 "        }";
         Request request = new Request.Builder()
                 .url(ATX_AGENT_URL + "/jsonrpc/0")

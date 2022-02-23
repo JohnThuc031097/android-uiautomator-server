@@ -150,7 +150,6 @@ public class Selector {
             else if (this.getChildOrSibling()[i].toLowerCase().equals("sibling"))
                 s = s.fromParent((getChildOrSiblingSelector()[i].toUiSelector()));
         }
-
         return s;
     }
 

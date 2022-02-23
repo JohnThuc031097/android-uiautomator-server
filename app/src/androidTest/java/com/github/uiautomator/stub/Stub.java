@@ -36,6 +36,8 @@ import androidx.test.uiautomator.UiDevice;
 import androidx.test.uiautomator.UiObjectNotFoundException;
 import androidx.test.uiautomator.Until;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.googlecode.jsonrpc4j.ErrorResolver;
 import com.googlecode.jsonrpc4j.JsonRpcServer;
@@ -67,7 +69,9 @@ public class Stub {
     @Before
     public void setUp() throws Exception {
         launchService();
-        JsonRpcServer jrs = new JsonRpcServer(new ObjectMapper(), new AutomatorServiceImpl(), AutomatorService.class);
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        JsonRpcServer jrs = new JsonRpcServer(objectMapper, new AutomatorServiceImpl(), AutomatorService.class);
         jrs.setShouldLogInvocationErrors(true);
         jrs.setErrorResolver((throwable, method, list) -> {
             String data = throwable.getMessage();
