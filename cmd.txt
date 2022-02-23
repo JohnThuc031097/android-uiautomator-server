@@ -1,0 +1,22 @@
+[Permission]
+adb -d shell appops set com.github.uiautomator SYSTEM_ALERT_WINDOW allow
+adb -d shell pm grant com.github.uiautomator android.permission.READ_LOGS
+adb shell am force-stop com.github.uiautomator
+
+[Build APK]
+gradlew assembleDebug assembleAndroidTest
+gradlew assembleAndroidTest
+
+[Get Device Info]
+adb shell getprop ro.product.cpu.abi
+
+[ATX-Agent]
+adb forward tcp:9008 tcp:9008
+adb shell am instrument -w -r -e debug false -e class com.github.uiautomator.stub.Stub \com.github.uiautomator.test/androidx.test.runner.AndroidJUnitRunner
+
+adb forward tcp:7912 tcp:7912
+adb push atx-agent /data/local/tmp
+adb shell chmod 755 /data/local/tmp/atx-agent
+adb shell /data/local/tmp/atx-agent server -d
+adb shell /data/local/tmp/atx-agent server -d --stop
+adb shell /data/local/tmp/atx-agent server -d --nouia --addr 127.0.0.1:7912
