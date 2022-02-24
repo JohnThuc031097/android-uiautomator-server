@@ -145,9 +145,9 @@ public class Selector {
             s = s.textMatches(getTextMatches());
 
         for (int i = 0; i < this.getChildOrSibling().length && i < this.getChildOrSiblingSelector().length; i++) {
-            if (this.getChildOrSibling()[i].toLowerCase().equals("child"))
+            if (this.getChildOrSibling()[i].equalsIgnoreCase("child"))
                 s = s.childSelector(getChildOrSiblingSelector()[i].toUiSelector());
-            else if (this.getChildOrSibling()[i].toLowerCase().equals("sibling"))
+            else if (this.getChildOrSibling()[i].equalsIgnoreCase("sibling"))
                 s = s.fromParent((getChildOrSiblingSelector()[i].toUiSelector()));
         }
         return s;

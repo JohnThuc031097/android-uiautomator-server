@@ -355,8 +355,13 @@ public class MainActivity extends Activity {
         String json = "{" +
                 "            \"jsonrpc\": \"2.0\",\n" +
                 "            \"id\": \"1\", \n" +
-                "            \"method\": \"getSelector\",\n" +
-                "            \"params\": [\"TEST\"]" +
+                "            \"method\": \"click\",\n" +
+                "            \"params\": [" +
+                "                           {" +
+                "                               \"text\":\"ENABLE\"," +
+                "                               \"packageName\":\"com.github.uiautomator\"" +
+                "                           }" +
+                "                       ]" +
                 "        }";
         Request request = new Request.Builder()
                 .url(ATX_AGENT_URL + "/jsonrpc/0")

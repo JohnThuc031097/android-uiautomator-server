@@ -1,2 +1,1 @@
 gradlew assembleDebug assembleAndroidTest
-:exit

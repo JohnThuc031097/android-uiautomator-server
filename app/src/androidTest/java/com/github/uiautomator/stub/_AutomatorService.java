@@ -25,12 +25,13 @@ package com.github.uiautomator.stub;
 
 import android.os.RemoteException;
 
+import androidx.test.uiautomator.UiObject;
 import androidx.test.uiautomator.UiObjectNotFoundException;
 
 import com.googlecode.jsonrpc4j.JsonRpcError;
 import com.googlecode.jsonrpc4j.JsonRpcErrors;
 
-public interface AutomatorService {
+public interface _AutomatorService {
     final static int ERROR_CODE_BASE = -32000;
 
     /**
@@ -416,11 +417,8 @@ public interface AutomatorService {
      * @return true id successful else false
      * @throws UiObjectNotFoundException
      */
-//    @JsonRpcErrors({@JsonRpcError(exception = UiObjectNotFoundException.class, code = ERROR_CODE_BASE - 2)})
-//    boolean click(Selector obj) throws UiObjectNotFoundException;
-
     @JsonRpcErrors({@JsonRpcError(exception = UiObjectNotFoundException.class, code = ERROR_CODE_BASE - 2)})
-    boolean click(SelectorModel obj) throws UiObjectNotFoundException;
+    boolean click(Selector obj) throws UiObjectNotFoundException;
 
     /**
      * Clicks the bottom and right corner or top and left corner of the UI element
@@ -796,16 +794,12 @@ public interface AutomatorService {
     /**
      * Get a new UiObject from the selector.
      *
-     * @param selectorModel Selector of the UiObject
+     * @param selector Selector of the UiObject
      * @return A string ID represent the returned UiObject.
      * @throws UiObjectNotFoundException
      */
-//    @JsonRpcErrors({@JsonRpcError(exception = UiObjectNotFoundException.class, code = ERROR_CODE_BASE - 2)})
-//    String getUiObject(Selector selector) throws UiObjectNotFoundException;
-
     @JsonRpcErrors({@JsonRpcError(exception = UiObjectNotFoundException.class, code = ERROR_CODE_BASE - 2)})
-    String getUiObject(SelectorModel selectorModel) throws UiObjectNotFoundException;
-
+    String getUiObject(Selector selector) throws UiObjectNotFoundException;
 
     /**
      * Remove the UiObject from memory.

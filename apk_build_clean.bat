@@ -1,2 +1,2 @@
 gradlew clean assembleDebug assembleAndroidTest
-:exit
+pause

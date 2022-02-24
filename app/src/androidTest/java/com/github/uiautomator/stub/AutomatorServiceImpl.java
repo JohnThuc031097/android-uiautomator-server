@@ -680,15 +680,20 @@ public class AutomatorServiceImpl implements AutomatorService {
      * @return true id successful else false
      * @throws UiObjectNotFoundException
      */
+//    @Override
+//    public boolean click(Selector obj) throws UiObjectNotFoundException {
+//        if (obj.toUiObject2() == null) {
+//            return device.findObject(obj.toUiSelector()).click();
+//        } else {
+//            obj.toUiObject2().click();
+//            return true;
+//        }
+//    }
     @Override
-    public boolean click(Selector obj) throws UiObjectNotFoundException {
-        if (obj.toUiObject2() == null) {
-            return device.findObject(obj.toUiSelector()).click();
-        } else {
-            obj.toUiObject2().click();
-            return true;
-        }
+    public boolean click(SelectorModel obj) throws UiObjectNotFoundException {
+        return device.findObject(this.getSelector(obj)).click();
     }
+
 
     /**
      * Clicks the bottom and right corner or top and left corner of the UI element
@@ -1344,19 +1349,24 @@ public class AutomatorServiceImpl implements AutomatorService {
     /**
      * Get a new UiObject from the selector.
      *
-     * @param selector Selector of the UiObject
+     * @param selectorModel Selector of the UiObject
      * @return A string ID represent the returned UiObject.
      */
-    @Override
-    public String getUiObject(Selector selector) {
-        return addUiObject(device.findObject(selector.toUiSelector()));
-    }
+//    @Override
+//    public String getUiObject(Selector selector) {
+//        if (this.exist(selector)){
+//            return addUiObject(device.findObject(selector.toUiSelector()));
+//        }
+//        return null;
+//    }
 
     @Override
-    public String getSelector(String text){
-        Selector selector = new Selector();
-        selector.setText(text);
-        return selector.toString();
+    public String getUiObject(SelectorModel selectorModel) {
+        if (device.findObject(this.getSelector(selectorModel)).exists()){
+            return addUiObject(device.findObject(this.getSelector(selectorModel)));
+        }else{
+            return null;
+        }
     }
 
     /**
@@ -1375,7 +1385,7 @@ public class AutomatorServiceImpl implements AutomatorService {
     @Override
     public String[] getUiObjects() {
         Set<String> strings = uiObjects.keySet();
-        return strings.toArray(new String[strings.size()]);
+        return strings.toArray(new String[0]);
     }
 
     private UiObject getUiObject(String name) throws UiObjectNotFoundException {
@@ -1666,5 +1676,25 @@ public class AutomatorServiceImpl implements AutomatorService {
             return clipboard.getPrimaryClip().getItemAt(0).getText().toString();
         }
         return null;
+    }
+
+    private UiSelector getSelector(SelectorModel selectorModel){
+        UiSelector selector = new UiSelector();
+        if (selectorModel.getText() != null){
+            selector = selector.text(selectorModel.getText());
+        }
+        if (selectorModel.getPackageName() != null){
+            selector = selector.packageName(selectorModel.getPackageName());
+        }
+        if (selectorModel.getClassName() != null){
+            selector = selector.className(selectorModel.getClassName());
+        }
+        if (selectorModel.getDescription() != null){
+            selector = selector.description(selectorModel.getDescription());
+        }
+        if (selectorModel.getResourceId() != null){
+            selector = selector.resourceId(selectorModel.getResourceId());
+        }
+        return selector;
     }
 }
