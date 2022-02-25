@@ -382,10 +382,9 @@ public class AutomatorServiceImpl implements AutomatorService {
      * Opens the notification shade.
      *
      * @return true if successful, else return false
-     * @throws NotImplementedException
      */
     @Override
-    public boolean openNotification() throws NotImplementedException {
+    public boolean openNotification() {
         return device.openNotification();
     }
 
@@ -393,10 +392,9 @@ public class AutomatorServiceImpl implements AutomatorService {
      * Opens the Quick Settings shade.
      *
      * @return true if successful, else return false
-     * @throws NotImplementedException
      */
     @Override
-    public boolean openQuickSettings() throws NotImplementedException {
+    public boolean openQuickSettings() {
         return device.openQuickSettings();
     }
 
@@ -680,19 +678,19 @@ public class AutomatorServiceImpl implements AutomatorService {
      * @return true id successful else false
      * @throws UiObjectNotFoundException
      */
-//    @Override
-//    public boolean click(Selector obj) throws UiObjectNotFoundException {
-//        if (obj.toUiObject2() == null) {
-//            return device.findObject(obj.toUiSelector()).click();
-//        } else {
-//            obj.toUiObject2().click();
-//            return true;
-//        }
-//    }
     @Override
-    public boolean click(SelectorModel obj) throws UiObjectNotFoundException {
-        return device.findObject(this.getSelector(obj)).click();
+    public boolean click(Selector obj) throws UiObjectNotFoundException {
+        if (obj.toUiObject2() == null) {
+            return device.findObject(obj.toUiSelector()).click();
+        } else {
+            obj.toUiObject2().click();
+            return true;
+        }
     }
+//    @Override
+//    public boolean click(SelectorModel obj) throws UiObjectNotFoundException {
+//        return device.findObject(this.getSelector(obj)).click();
+//    }
 
 
     /**

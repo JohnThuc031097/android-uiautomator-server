@@ -45,7 +45,7 @@ public class DeviceInfo {
         return new DeviceInfo();
     }
 
-    private DeviceInfo() {
+    public DeviceInfo() {
         this._sdkInt = android.os.Build.VERSION.SDK_INT;
 
         UiDevice ud = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());

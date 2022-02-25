@@ -32,6 +32,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -355,7 +357,7 @@ public class MainActivity extends Activity {
         String json = "{" +
                 "            \"jsonrpc\": \"2.0\",\n" +
                 "            \"id\": \"1\", \n" +
-                "            \"method\": \"click\",\n" +
+                "            \"method\": \"objInfo\",\n" +
                 "            \"params\": [" +
                 "                           {" +
                 "                               \"text\":\"ENABLE\"," +
@@ -427,9 +429,30 @@ public class MainActivity extends Activity {
 //    ======================
 //    ===== ATX-Agent ======
 //    ======================
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public void startAtxAgentStatus(View view) {
-
+        runOnUiThread(() ->{
+            try {
+                Class<?> cls = Class.forName("com.github.uiautomator.stub.AutomatorServiceImpl");
+                Object obj = cls.newInstance();
+                Method deviceInfo = obj.getClass().getDeclaredMethod("objInfo", JSONObject.class);
+                Object result = (deviceInfo.invoke(obj, new JSONObject("[{\"text\":\"CHECK\",\"packageName\":\"com.github.uiautomator\"}]")));
+                runOnUiThread(new TextViewSetter(tvServiceMessage, result.toString()));
+            } catch(ClassNotFoundException | NoSuchMethodException e ) {
+                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+            } catch (InvocationTargetException e) {
+                e.printStackTrace();
+                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+            } catch (Exception e){
+                e.printStackTrace();
+                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+            }
+        });
     }
+
     public void checkAtxAgentStatus(View view) {
         Request request = new Request.Builder()
                 .url(ATX_AGENT_URL + "/ping")

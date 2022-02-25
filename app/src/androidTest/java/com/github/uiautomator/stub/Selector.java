@@ -61,7 +61,7 @@ public class Selector {
     private Selector[] _childOrSiblingSelector = new Selector[]{};
     private String[] _childOrSibling = new String[]{};
 
-    private long _mask;
+    private long _mask = 1L;
 
     public static final long MASK_TEXT = 0x01;
     public static final long MASK_TEXTCONTAINS = 0x02;

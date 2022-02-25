@@ -67,8 +67,6 @@ public class Stub {
     @Before
     public void setUp() throws Exception {
         launchService();
-//        ObjectMapper objectMapper = new ObjectMapper();
-//        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
         JsonRpcServer jrs = new JsonRpcServer(new ObjectMapper(), new AutomatorServiceImpl(), AutomatorService.class);
         jrs.setShouldLogInvocationErrors(true);
         jrs.setErrorResolver((throwable, method, list) -> {
@@ -136,7 +134,7 @@ public class Stub {
 
     @Test
     @LargeTest
-    public void testUIAutomatorStub() throws InterruptedException {
+    public void testUIAutomatorStub() throws Exception {
         while (server.isAlive()) {
             Thread.sleep(100);
         }
