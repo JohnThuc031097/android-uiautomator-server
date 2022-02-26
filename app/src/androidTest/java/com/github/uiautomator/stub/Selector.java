@@ -91,6 +91,10 @@ public class Selector {
 
     private UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
 
+    public Selector(){
+
+    }
+
     public UiSelector toUiSelector() {
         UiSelector s = new UiSelector();
         if ((getMask() & Selector.MASK_CHECKABLE) > 0 && android.os.Build.VERSION.SDK_INT >= 18)
@@ -150,6 +154,7 @@ public class Selector {
             else if (this.getChildOrSibling()[i].equalsIgnoreCase("sibling"))
                 s = s.fromParent((getChildOrSiblingSelector()[i].toUiSelector()));
         }
+
         return s;
     }
 

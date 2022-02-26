@@ -3,8 +3,6 @@ package com.github.uiautomator.stub;
 import android.app.UiAutomation;
 import android.graphics.Rect;
 import android.os.Build;
-import androidx.test.InstrumentationRegistry;
-import androidx.test.uiautomator.UiDevice;
 import android.util.Log;
 import android.util.Xml;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -13,6 +11,9 @@ import android.widget.GridLayout;
 import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.TableLayout;
+
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.uiautomator.UiDevice;
 
 import org.xmlpull.v1.XmlSerializer;
 

@@ -24,7 +24,6 @@
 package com.github.uiautomator.stub;
 
 import android.os.RemoteException;
-
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
 
@@ -45,7 +44,7 @@ public class DeviceInfo {
         return new DeviceInfo();
     }
 
-    public DeviceInfo() {
+    private DeviceInfo() {
         this._sdkInt = android.os.Build.VERSION.SDK_INT;
 
         UiDevice ud = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());

@@ -51,7 +51,6 @@ public class AutomatorHttpServer extends NanoHTTPD {
         router.put(uri, rpc);
     }
 
-
     @Override
     public Response serve(String uri, Method method,
                           Map<String, String> headers, Map<String, String> params,
@@ -64,10 +63,6 @@ public class AutomatorHttpServer extends NanoHTTPD {
         } else if ("/ping".equals(uri)) {
             return newFixedLengthResponse("pong");
         } else if ("/screenshot/0".equals(uri)) {
-            String name = "test";
-            if (params.containsKey("name")) {
-                name = params.get("name");
-            }
             float scale = 1.0f;
             if (params.containsKey("scale")) {
                 try {
@@ -82,8 +77,9 @@ public class AutomatorHttpServer extends NanoHTTPD {
                 } catch (NumberFormatException e) {
                 }
             }
-            File f = new File(InstrumentationRegistry.getInstrumentation().getTargetContext().getFilesDir(), name);
+            File f = new File(InstrumentationRegistry.getInstrumentation().getTargetContext().getFilesDir(), "screenshot.png");
             UiDevice.getInstance(InstrumentationRegistry.getInstrumentation()).takeScreenshot(f, scale, quality);
+
             try {
                 return newChunkedResponse(Response.Status.OK, "image/png", new FileInputStream(f));
             } catch (FileNotFoundException e) {
@@ -109,4 +105,5 @@ public class AutomatorHttpServer extends NanoHTTPD {
         } else
             return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_PLAINTEXT, "Not Found!!!");
     }
+
 }

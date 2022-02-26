@@ -35,7 +35,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.os.SystemClock;
-import android.util.Base64;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
@@ -59,6 +58,7 @@ import com.github.uiautomator.stub.watcher.PressKeysWatcher;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Timer;
@@ -154,7 +154,12 @@ public class AutomatorServiceImpl implements AutomatorService {
     @Override
     public boolean makeToast(final String text, final int duration) {
 
-        handler.post(() -> ToastHelper.makeText(InstrumentationRegistry.getInstrumentation().getTargetContext(), text, duration).show());
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                ToastHelper.makeText(InstrumentationRegistry.getInstrumentation().getTargetContext(), text, duration).show();
+            }
+        });
         return true;
     }
 
@@ -304,9 +309,10 @@ public class AutomatorServiceImpl implements AutomatorService {
      * @param scale    scale the screenshot down if needed; 1.0f for original size
      * @param quality  quality of the PNG compression; range: 0-100
      * @return the file name of the screenshot. null if failed.
+     * @throws NotImplementedException
      */
     @Override
-    public String takeScreenshot(String filename, float scale, int quality) {
+    public String takeScreenshot(String filename, float scale, int quality) throws NotImplementedException {
         File f = new File(InstrumentationRegistry.getInstrumentation().getTargetContext().getFilesDir(), filename);
         device.takeScreenshot(f, scale, quality);
         if (f.exists()) return f.getAbsolutePath();
@@ -314,21 +320,26 @@ public class AutomatorServiceImpl implements AutomatorService {
     }
 
     @Override
-    public String takeScreenshot(float scale, int quality) {
+    public String takeScreenshot(float scale, int quality) throws NotImplementedException {
         Bitmap screenshot = getUiAutomation().takeScreenshot();
         if (screenshot == null) {
             return null;
         }
 
-        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-            screenshot.compress(Bitmap.CompressFormat.PNG, quality, bos);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try {
+            screenshot.compress(Bitmap.CompressFormat.JPEG, quality, bos);
             bos.flush();
-            return Base64.encodeToString(bos.toByteArray(), Base64.DEFAULT);
+            return Base64.getEncoder().encodeToString(bos.toByteArray());
         } catch (IOException ioe) {
             Log.e("takeScreenshot error: " + ioe);
             return null;
         } finally {
-            // Ignore
+            try {
+                bos.close();
+            } catch (IOException ioe) {
+                // Ignore
+            }
             screenshot.recycle();
         }
     }
@@ -382,9 +393,10 @@ public class AutomatorServiceImpl implements AutomatorService {
      * Opens the notification shade.
      *
      * @return true if successful, else return false
+     * @throws NotImplementedException
      */
     @Override
-    public boolean openNotification() {
+    public boolean openNotification() throws NotImplementedException {
         return device.openNotification();
     }
 
@@ -392,9 +404,10 @@ public class AutomatorServiceImpl implements AutomatorService {
      * Opens the Quick Settings shade.
      *
      * @return true if successful, else return false
+     * @throws NotImplementedException
      */
     @Override
-    public boolean openQuickSettings() {
+    public boolean openQuickSettings() throws NotImplementedException {
         return device.openQuickSettings();
     }
 
@@ -687,11 +700,6 @@ public class AutomatorServiceImpl implements AutomatorService {
             return true;
         }
     }
-//    @Override
-//    public boolean click(SelectorModel obj) throws UiObjectNotFoundException {
-//        return device.findObject(this.getSelector(obj)).click();
-//    }
-
 
     /**
      * Clicks the bottom and right corner or top and left corner of the UI element
@@ -1347,24 +1355,13 @@ public class AutomatorServiceImpl implements AutomatorService {
     /**
      * Get a new UiObject from the selector.
      *
-     * @param selectorModel Selector of the UiObject
+     * @param selector Selector of the UiObject
      * @return A string ID represent the returned UiObject.
+     * @throws UiObjectNotFoundException
      */
-//    @Override
-//    public String getUiObject(Selector selector) {
-//        if (this.exist(selector)){
-//            return addUiObject(device.findObject(selector.toUiSelector()));
-//        }
-//        return null;
-//    }
-
     @Override
-    public String getUiObject(SelectorModel selectorModel) {
-        if (device.findObject(this.getSelector(selectorModel)).exists()){
-            return addUiObject(device.findObject(this.getSelector(selectorModel)));
-        }else{
-            return null;
-        }
+    public String getUiObject(Selector selector) throws UiObjectNotFoundException {
+        return addUiObject(device.findObject(selector.toUiSelector()));
     }
 
     /**
@@ -1383,7 +1380,7 @@ public class AutomatorServiceImpl implements AutomatorService {
     @Override
     public String[] getUiObjects() {
         Set<String> strings = uiObjects.keySet();
-        return strings.toArray(new String[0]);
+        return strings.toArray(new String[strings.size()]);
     }
 
     private UiObject getUiObject(String name) throws UiObjectNotFoundException {
@@ -1674,25 +1671,5 @@ public class AutomatorServiceImpl implements AutomatorService {
             return clipboard.getPrimaryClip().getItemAt(0).getText().toString();
         }
         return null;
-    }
-
-    private UiSelector getSelector(SelectorModel selectorModel){
-        UiSelector selector = new UiSelector();
-        if (selectorModel.getText() != null){
-            selector = selector.text(selectorModel.getText());
-        }
-        if (selectorModel.getPackageName() != null){
-            selector = selector.packageName(selectorModel.getPackageName());
-        }
-        if (selectorModel.getClassName() != null){
-            selector = selector.className(selectorModel.getClassName());
-        }
-        if (selectorModel.getDescription() != null){
-            selector = selector.description(selectorModel.getDescription());
-        }
-        if (selectorModel.getResourceId() != null){
-            selector = selector.resourceId(selectorModel.getResourceId());
-        }
-        return selector;
     }
 }

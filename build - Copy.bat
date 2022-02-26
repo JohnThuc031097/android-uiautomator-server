@@ -1,0 +1,1 @@
+gradlew assembleAndroidTest assembleDebug installAndroidTest installDebug

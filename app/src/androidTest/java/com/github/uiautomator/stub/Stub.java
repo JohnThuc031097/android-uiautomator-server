@@ -27,10 +27,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.RemoteException;
 
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.SdkSuppress;
-import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.By;
 import androidx.test.uiautomator.UiDevice;
 import androidx.test.uiautomator.UiObjectNotFoundException;
@@ -61,7 +61,7 @@ public class Stub {
     // http://www.jsonrpc.org/specification#error_object
     private static final int CUSTOM_ERROR_CODE = -32001;
 
-    int PORT = 9008;
+    int PORT = 7912;
     AutomatorHttpServer server = new AutomatorHttpServer(PORT);
 
     @Before
@@ -86,7 +86,7 @@ public class Stub {
     private void launchPackage(String packageName) {
         Log.i(TAG, "Launch " + packageName);
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getContext();
         final Intent intent = context.getPackageManager()
                 .getLaunchIntentForPackage(packageName);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -98,7 +98,7 @@ public class Stub {
 
     private void launchService() throws RemoteException {
         UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getContext();
         device.wakeUp();
 
         // Wait for launcher
@@ -122,7 +122,7 @@ public class Stub {
     @After
     public void tearDown() {
         server.stop();
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getInstrumentation().getContext();
         stopMonitorService(context);
     }
 
@@ -134,7 +134,7 @@ public class Stub {
 
     @Test
     @LargeTest
-    public void testUIAutomatorStub() throws Exception {
+    public void testUIAutomatorStub() throws InterruptedException {
         while (server.isAlive()) {
             Thread.sleep(100);
         }
