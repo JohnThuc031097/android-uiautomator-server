@@ -61,7 +61,7 @@ public class Stub {
     // http://www.jsonrpc.org/specification#error_object
     private static final int CUSTOM_ERROR_CODE = -32001;
 
-    int PORT = 7912;
+    int PORT = 9008;//7912;
     AutomatorHttpServer server = new AutomatorHttpServer(PORT);
 
     @Before

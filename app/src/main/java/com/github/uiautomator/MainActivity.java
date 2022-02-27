@@ -433,20 +433,17 @@ public class MainActivity extends Activity {
     public void startAtxAgentStatus(View view) {
         runOnUiThread(() ->{
             try {
-//                Class<?> clsSelector = Class.forName("com.github.uiautomator.stub.Selector");
-                Class<?> clsSelector = Package.getPackage("com.github.uiautomator.stub.Selector").getClass();
-//                Class<?> clsObjInfo = Class.forName("com.github.uiautomator.stub.ObjInfo");
-//                Class<?> clsObjInfo = Package.getPackage("com.github.uiautomator.stub.ObjInfo").getClass();
-//                Class<?> clsAutomatorServiceImpl = Class.forName("com.github.uiautomator.stub.AutomatorServiceImpl");
-                Class<?> clsAutomatorServiceImpl = Package.getPackage("com.github.uiautomator.stub.AutomatorServiceImpl").getClass();
+                Class<?> clsSelector = Class.forName("com.github.uiautomator.stub.Selector");
+                Class<?> clsObjInfo = Class.forName("com.github.uiautomator.stub.ObjInfo");
+                Class<?> clsAutomatorServiceImpl = Class.forName("com.github.uiautomator.stub.AutomatorServiceImpl");
                 Object obj = clsAutomatorServiceImpl.newInstance();
                 Object selectorValue = new ObjectMapper().readValue("{\"text\":\"CHECK\"}", clsSelector);
                 Method objInfo = obj.getClass().getDeclaredMethod("objInfo", clsSelector);
                 Object resultObjInfo = objInfo.invoke(obj, selectorValue);
                 String result = new ObjectMapper().writeValueAsString(resultObjInfo);
-//                Method getClassName = clsObjInfo.cast(resultObjInfo).getClass().getDeclaredMethod("getClassName");
-//                String result = String.valueOf(getClassName.invoke(resultObjInfo));
-                runOnUiThread(new TextViewSetter(tvServiceMessage, result));
+                runOnUiThread(new TextViewSetter(tvServiceMessage,result));
+                Service service = new Service();
+                service.onCreate();
             } catch (Exception e){
                 e.printStackTrace();
                 runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
