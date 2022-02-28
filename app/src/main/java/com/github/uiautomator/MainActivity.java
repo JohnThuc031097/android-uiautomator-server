@@ -24,16 +24,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 import com.android.permission.FloatWindowManager;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.uiautomator.util.MemoryManager;
 import com.github.uiautomator.util.OkhttpManager;
 import com.github.uiautomator.util.Permissons4App;
+import com.jaredrummler.ktsh.Shell;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -46,6 +45,8 @@ public class MainActivity extends Activity {
     private final String TAG = "ATXMainActivity";
     private final int PORT = 7912;
     private final String ATX_AGENT_URL = "http://127.0.0.1:" + PORT;
+    private final Shell shell = new Shell("sh");
+
 
     private TextView tvInStorage;
     private TextView textViewIP;
@@ -433,21 +434,30 @@ public class MainActivity extends Activity {
     public void startAtxAgentStatus(View view) {
         runOnUiThread(() ->{
             try {
-                Class<?> clsSelector = Class.forName("com.github.uiautomator.stub.Selector");
-                Class<?> clsObjInfo = Class.forName("com.github.uiautomator.stub.ObjInfo");
-                Class<?> clsAutomatorServiceImpl = Class.forName("com.github.uiautomator.stub.AutomatorServiceImpl");
-                Object obj = clsAutomatorServiceImpl.newInstance();
-                Object selectorValue = new ObjectMapper().readValue("{\"text\":\"CHECK\"}", clsSelector);
-                Method objInfo = obj.getClass().getDeclaredMethod("objInfo", clsSelector);
-                Object resultObjInfo = objInfo.invoke(obj, selectorValue);
-                String result = new ObjectMapper().writeValueAsString(resultObjInfo);
-                runOnUiThread(new TextViewSetter(tvServiceMessage,result));
-                Service service = new Service();
-                service.onCreate();
-            } catch (Exception e){
+                Shell.Command.Result result = shell.run("am instrument -w -r -e debug false -e class com.github.uiautomator.stub.Stub \\com.github.uiautomator.test/androidx.test.runner.AndroidJUnitRunner");
+                if (result.isSuccess()){
+                    runOnUiThread(new TextViewSetter(tvServiceMessage, result.stdout()));
+                }else{
+                    runOnUiThread(new TextViewSetter(tvServiceMessage, result.stderr()));
+                }
+            } catch (Shell.ClosedException e) {
                 e.printStackTrace();
                 runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
             }
+//            try {
+//                Class<?> clsSelector = Class.forName("com.github.uiautomator.stub.Selector");
+////                Class<?> clsObjInfo = Class.forName("com.github.uiautomator.stub.ObjInfo");
+//                Class<?> clsAutomatorServiceImpl = Class.forName("com.github.uiautomator.stub.AutomatorServiceImpl");
+//                Object obj = clsAutomatorServiceImpl.newInstance();
+//                Object selectorValue = new ObjectMapper().readValue("{\"text\":\"CHECK\"}", clsSelector);
+//                Method objInfo = obj.getClass().getDeclaredMethod("objInfo", clsSelector);
+//                Object resultObjInfo = objInfo.invoke(obj, selectorValue);
+//                String result = new ObjectMapper().writeValueAsString(resultObjInfo);
+//                runOnUiThread(new TextViewSetter(tvServiceMessage,result));
+//            } catch (Exception e){
+//                e.printStackTrace();
+//                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+//            }
         });
     }
 
