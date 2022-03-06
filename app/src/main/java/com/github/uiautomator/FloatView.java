@@ -8,7 +8,6 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -76,20 +75,21 @@ public class FloatView extends FrameLayout {
         windowManager.getDefaultDisplay().getSize(size);
         int screenWidth = size.x;
         int screenHeight = size.y;
-        int minWidthHeight = size.x > size.y ? size.y : size.x;
+//        int minWidthHeight = size.x > size.y ? size.y : size.x;
+        int minWidthHeight = Math.min(size.x, size.y);
 
         WindowManager.LayoutParams params = new WindowManager.LayoutParams();
         params.packageName = context.getPackageName();
         params.width = WindowManager.LayoutParams.WRAP_CONTENT;
         params.height = WindowManager.LayoutParams.WRAP_CONTENT;
-        params.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL // 不拦截触摸事件
-                | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
-                | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON; // 保持屏幕常亮
-
         // Set to not touchable
         params.flags |= WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
         params.flags &= (~WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
+
+        params.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL // 不拦截触摸事件
+                | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON; // 保持屏幕常亮
 
         int mType;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -99,12 +99,12 @@ public class FloatView extends FrameLayout {
         }
         params.type = mType;
         params.format = PixelFormat.RGBA_8888;
-        params.gravity = Gravity.LEFT | Gravity.TOP;
-        params.width = minWidthHeight / 20;
-        params.height = minWidthHeight / 20;
+        params.gravity = Gravity.TOP | Gravity.START;
+        params.width = minWidthHeight / 7;
+        params.height = minWidthHeight / 7;
         params.x = screenWidth - sideGap() - params.width;
         params.y = screenHeight / 3 * 2;
-        params.alpha = 0.2f;
+        params.alpha = 0.8f;
         this.setParams(params);
         windowManager.addView(this, params);
     }
@@ -147,8 +147,16 @@ public class FloatView extends FrameLayout {
             case MotionEvent.ACTION_UP:
                 if (Math.abs(xDownInScreen - xInScreen) <= ViewConfiguration.get(getContext()).getScaledTouchSlop()
                         && Math.abs(yDownInScreen - yInScreen) <= ViewConfiguration.get(getContext()).getScaledTouchSlop()) {
-                    // 点击效果
                     Toast.makeText(getContext(), "this float window is clicked", Toast.LENGTH_SHORT).show();
+                } else {
+                    //吸附效果
+                    anchorToSide();
+                }
+                break;
+            case MotionEvent.ACTION_BUTTON_PRESS:
+                if (Math.abs(xDownInScreen - xInScreen) <= ViewConfiguration.get(getContext()).getScaledTouchSlop()
+                        && Math.abs(yDownInScreen - yInScreen) <= ViewConfiguration.get(getContext()).getScaledTouchSlop()) {
+                    Toast.makeText(getContext(), "this float window is long clicked", Toast.LENGTH_SHORT).show();
                 } else {
                     //吸附效果
                     anchorToSide();

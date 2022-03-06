@@ -27,7 +27,6 @@ import com.android.permission.FloatWindowManager;
 import com.github.uiautomator.util.MemoryManager;
 import com.github.uiautomator.util.OkhttpManager;
 import com.github.uiautomator.util.Permissons4App;
-import com.jaredrummler.ktsh.Shell;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,8 +44,6 @@ public class MainActivity extends Activity {
     private final String TAG = "ATXMainActivity";
     private final int PORT = 7912;
     private final String ATX_AGENT_URL = "http://127.0.0.1:" + PORT;
-    private final Shell shell = new Shell("sh");
-
 
     private TextView tvInStorage;
     private TextView textViewIP;
@@ -123,16 +120,18 @@ public class MainActivity extends Activity {
         tvInStorage = findViewById(R.id.in_storage);
 
         String[] permissions = new String[]{
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.READ_PHONE_STATE,
-                Manifest.permission.READ_PHONE_NUMBERS,
-                Manifest.permission.READ_SMS,
-                Manifest.permission.RECEIVE_SMS,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE
+//                Manifest.permission.ACCESS_COARSE_LOCATION,
+//                Manifest.permission.READ_PHONE_STATE,
+//                Manifest.permission.READ_PHONE_NUMBERS,
+//                Manifest.permission.READ_SMS,
+//                Manifest.permission.RECEIVE_SMS,
+//                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.SYSTEM_ALERT_WINDOW
         };
         Permissons4App.initPermissions(this, permissions);
     }
+
     @Override
     protected void onStart() {
         super.onStart();
@@ -430,20 +429,8 @@ public class MainActivity extends Activity {
 //    ======================
 //    ===== ATX-Agent ======
 //    ======================
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public void startAtxAgentStatus(View view) {
         runOnUiThread(() ->{
-            try {
-                Shell.Command.Result result = shell.run("am instrument -w -r -e debug false -e class com.github.uiautomator.stub.Stub \\com.github.uiautomator.test/androidx.test.runner.AndroidJUnitRunner");
-                if (result.isSuccess()){
-                    runOnUiThread(new TextViewSetter(tvServiceMessage, result.stdout()));
-                }else{
-                    runOnUiThread(new TextViewSetter(tvServiceMessage, result.stderr()));
-                }
-            } catch (Shell.ClosedException e) {
-                e.printStackTrace();
-                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
-            }
 //            try {
 //                Class<?> clsSelector = Class.forName("com.github.uiautomator.stub.Selector");
 ////                Class<?> clsObjInfo = Class.forName("com.github.uiautomator.stub.ObjInfo");

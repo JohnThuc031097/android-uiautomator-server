@@ -1,6 +1,5 @@
 package com.github.uiautomator;
 
-import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -8,30 +7,20 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.IBinder;
-import androidx.annotation.Nullable;
+import android.util.Log;
+
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
-import android.util.Log;
 
 import com.github.uiautomator.monitor.AbstractMonitor;
 import com.github.uiautomator.monitor.BatteryMonitor;
 import com.github.uiautomator.monitor.HttpPostNotifier;
-import com.github.uiautomator.monitor.RotationMonitor;
 import com.github.uiautomator.monitor.WifiMonitor;
-import com.github.uiautomator.util.OkhttpManager;
 
-import org.json.JSONObject;
-
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.Response;
 
 public class Service extends android.app.Service {
     public static final String ACTION_START = "com.github.uiautomator.ACTION_START";
@@ -53,7 +42,7 @@ public class Service extends android.app.Service {
     @RequiresApi(Build.VERSION_CODES.O)
     private String createNotificationChannel(String channelId, String channelName) {
         NotificationChannel chan = new NotificationChannel(channelId,
-                channelName, NotificationManager.IMPORTANCE_NONE);
+                channelName, NotificationManager.IMPORTANCE_DEFAULT);
         chan.setLightColor(Color.BLUE);
         chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
         NotificationManager service = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -85,7 +74,7 @@ public class Service extends android.app.Service {
 
         HttpPostNotifier notifier = new HttpPostNotifier("http://127.0.0.1:7912");
         Context context = getApplicationContext();
-        addMonitor(new BatteryMonitor(context, notifier));
+        addMonitor(new BatteryMonitor(this, notifier));
         addMonitor(new WifiMonitor(this, notifier));
     }
 

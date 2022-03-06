@@ -23,7 +23,7 @@
 
 package com.github.uiautomator.stub.watcher;
 
-import androidx.test.InstrumentationRegistry;
+import  androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.UiDevice;
 import androidx.test.uiautomator.UiObjectNotFoundException;
 import androidx.test.uiautomator.UiSelector;

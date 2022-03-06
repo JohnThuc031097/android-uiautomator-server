@@ -54,7 +54,7 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:5.0.0-alpha.4'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.1'
     implementation "commons-cli:commons-cli:$commonsCliVersion"
-    implementation 'com.jaredrummler:ktsh:1.0.0'
+    implementation "androidx.core:core:1.7.0"
     implementation project(':permission')
 
     // AppTest

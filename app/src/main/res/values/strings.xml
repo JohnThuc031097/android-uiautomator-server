@@ -60,4 +60,6 @@
     <string name="atx_agent">ATX-Agent</string>
     <string name="avaible_internal_storage">Internal Storage:</string>
     <string name="avaible_sd_storage">SD Storage:</string>
+    <string name="channel_name">ATXTest</string>
+    <string name="channel_description">Test data</string>
 </resources>
