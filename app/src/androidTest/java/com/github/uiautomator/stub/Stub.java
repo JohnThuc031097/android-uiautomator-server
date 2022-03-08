@@ -27,26 +27,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.RemoteException;
 
-import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.SdkSuppress;
+import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.uiautomator.By;
 import androidx.test.uiautomator.UiDevice;
-import androidx.test.uiautomator.UiObjectNotFoundException;
 import androidx.test.uiautomator.Until;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.googlecode.jsonrpc4j.ErrorResolver;
-import com.googlecode.jsonrpc4j.JsonRpcServer;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
 
 /**
  * Use JUnit test to start the uiautomator jsonrpc server.
@@ -67,33 +59,39 @@ public class Stub {
     @Before
     public void setUp() throws Exception {
         launchService();
-        JsonRpcServer jrs = new JsonRpcServer(new ObjectMapper(), new AutomatorServiceImpl(), AutomatorService.class);
-        jrs.setShouldLogInvocationErrors(true);
-        jrs.setErrorResolver((throwable, method, list) -> {
-            String data = throwable.getMessage();
-            if (!throwable.getClass().equals(UiObjectNotFoundException.class)) {
-                throwable.printStackTrace();
-                StringWriter sw = new StringWriter();
-                throwable.printStackTrace(new PrintWriter(sw));
-                data = sw.toString();
-            }
-            return new ErrorResolver.JsonError(CUSTOM_ERROR_CODE, throwable.getClass().getName(), data);
-        });
-        server.route("/jsonrpc/0", jrs);
-        server.start();
+//        JsonRpcServer jrs = new JsonRpcServer(new ObjectMapper(), new AutomatorServiceImpl(), AutomatorService.class);
+//        jrs.setShouldLogInvocationErrors(true);
+//        jrs.setErrorResolver((throwable, method, list) -> {
+//            String data = throwable.getMessage();
+//            if (!throwable.getClass().equals(UiObjectNotFoundException.class)) {
+//                throwable.printStackTrace();
+//                StringWriter sw = new StringWriter();
+//                throwable.printStackTrace(new PrintWriter(sw));
+//                data = sw.toString();
+//            }
+//            return new ErrorResolver.JsonError(CUSTOM_ERROR_CODE, throwable.getClass().getName(), data);
+//        });
+//        server.route("/jsonrpc/0", jrs);
+//        server.start();
     }
 
-    private void launchPackage(String packageName) {
-        Log.i(TAG, "Launch " + packageName);
-        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-        Context context = InstrumentationRegistry.getInstrumentation().getContext();
-        final Intent intent = context.getPackageManager()
-                .getLaunchIntentForPackage(packageName);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        context.startActivity(intent);
+    public String launchPackage(String packageName) {
+        try {
+            Log.i(TAG, "Launch " + packageName);
+            UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+            Context context = InstrumentationRegistry.getInstrumentation().getContext();
+            final Intent intent = context.getPackageManager()
+                    .getLaunchIntentForPackage(packageName);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            context.startActivity(intent);
 
-        device.wait(Until.hasObject(By.pkg(packageName).depth(0)), LAUNCH_TIMEOUT);
-        device.pressHome();
+            device.wait(Until.hasObject(By.pkg(packageName).depth(0)), LAUNCH_TIMEOUT);
+            device.pressHome();
+        }catch (Exception e){
+            e.printStackTrace();
+            return e.toString();
+        }
+        return "OK";
     }
 
     private void launchService() throws RemoteException {

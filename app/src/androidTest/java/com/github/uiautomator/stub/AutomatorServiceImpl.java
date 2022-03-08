@@ -66,7 +66,6 @@ import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 public class AutomatorServiceImpl implements AutomatorService {
 
     private final HashSet<String> watchers = new HashSet<>();

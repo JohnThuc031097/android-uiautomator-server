@@ -7,6 +7,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -24,6 +25,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 import com.android.permission.FloatWindowManager;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.uiautomator.util.MemoryManager;
 import com.github.uiautomator.util.OkhttpManager;
 import com.github.uiautomator.util.Permissons4App;
@@ -32,7 +34,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 
+import dalvik.system.PathClassLoader;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -44,6 +48,8 @@ public class MainActivity extends Activity {
     private final String TAG = "ATXMainActivity";
     private final int PORT = 7912;
     private final String ATX_AGENT_URL = "http://127.0.0.1:" + PORT;
+    private final String PACKAGE_PATH = "com.github.uiautomator.test";
+    private final String CLASS_PATH = "com.github.uiautomator.stub";
 
     private TextView tvInStorage;
     private TextView textViewIP;
@@ -354,100 +360,41 @@ public class MainActivity extends Activity {
         });
     }
     public void getObjectUiautomator(View view){
-        String json = "{" +
-                "            \"jsonrpc\": \"2.0\",\n" +
-                "            \"id\": \"1\", \n" +
-                "            \"method\": \"objInfo\",\n" +
-                "            \"params\": [" +
-                "                           {" +
-                "                               \"text\":\"ENABLE\"," +
-                "                               \"packageName\":\"com.github.uiautomator\"" +
-                "                           }" +
-                "                       ]" +
-                "        }";
-        Request request = new Request.Builder()
-                .url(ATX_AGENT_URL + "/jsonrpc/0")
-                .post(RequestBody.create(json,MediaType.parse("application/json")))
-                .build();
-        okhttpManager.newCall(request, new Callback() {
-
-            @Override
-            public void onFailure(Call call, IOException e) {
+        runOnUiThread(() ->{
+            try {
+                Class<?> clsSelector = loadClass(".Selector");
+                Class<?> clsAutomatorServiceImpl = loadClass(".AutomatorServiceImpl");
+                Object obj = clsAutomatorServiceImpl.newInstance();
+                Object selectorValue = new ObjectMapper().readValue("{\"text\":\"CHECK\"}", clsSelector);
+                Method objInfo = obj.getClass().getDeclaredMethod("objInfo", clsSelector);
+                Object resultObjInfo = objInfo.invoke(obj, selectorValue);
+                String result = new ObjectMapper().writeValueAsString(resultObjInfo);
+                runOnUiThread(new TextViewSetter(tvServiceMessage,result));
+            } catch (Exception e){
+                e.printStackTrace();
                 runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) {
-                try {
-                    if (response.body() == null || !response.isSuccessful()) {
-                        runOnUiThread(new TextViewSetter(tvServiceMessage, "UIAutomator not responding!"));
-                        return;
-                    }
-                    String responseData = response.body().string();
-                    runOnUiThread(new TextViewSetter(tvServiceMessage, responseData));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
-                }
             }
         });
     }
     public void testFuncUiautomator(View view) {
-        String json = "{" +
-                "            \"jsonrpc\": \"2.0\",\n" +
-                "            \"id\": \"1\", \n" +
-                "            \"method\": \"dumpWindowHierarchy\",\n" +
-                "            \"params\": [false]\n" +
-                "        }";
-        Request request = new Request.Builder()
-                .url(ATX_AGENT_URL + "/jsonrpc/0")
-                .post(RequestBody.create(json,MediaType.parse("application/json")))
-                .build();
-        okhttpManager.newCall(request, new Callback() {
-
-            @Override
-            public void onFailure(Call call, IOException e) {
-                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) {
-                try {
-                    if (response.body() == null || !response.isSuccessful()) {
-                        runOnUiThread(new TextViewSetter(tvServiceMessage, "UIAutomator not responding!"));
-                        return;
-                    }
-                    String responseData = response.body().string();
-                    runOnUiThread(new TextViewSetter(tvServiceMessage, responseData));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
-                }
-            }
-        });
     }
 //    ======================
 //    ===== ATX-Agent ======
 //    ======================
     public void startAtxAgentStatus(View view) {
-        runOnUiThread(() ->{
-//            try {
-//                Class<?> clsSelector = Class.forName("com.github.uiautomator.stub.Selector");
-////                Class<?> clsObjInfo = Class.forName("com.github.uiautomator.stub.ObjInfo");
-//                Class<?> clsAutomatorServiceImpl = Class.forName("com.github.uiautomator.stub.AutomatorServiceImpl");
-//                Object obj = clsAutomatorServiceImpl.newInstance();
-//                Object selectorValue = new ObjectMapper().readValue("{\"text\":\"CHECK\"}", clsSelector);
-//                Method objInfo = obj.getClass().getDeclaredMethod("objInfo", clsSelector);
-//                Object resultObjInfo = objInfo.invoke(obj, selectorValue);
-//                String result = new ObjectMapper().writeValueAsString(resultObjInfo);
-//                runOnUiThread(new TextViewSetter(tvServiceMessage,result));
-//            } catch (Exception e){
-//                e.printStackTrace();
-//                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
-//            }
+        runOnUiThread(() -> {
+            try {
+                Class<?> classz = loadClass(".Stub");
+                Object obj = classz.newInstance();
+                Method mRun = obj.getClass().getDeclaredMethod("launchPackage", String.class);
+                String result = String.valueOf(mRun.invoke(obj, "com.instagram.android"));
+                runOnUiThread(new TextViewSetter(tvServiceMessage, result));
+            }catch (Exception e){
+                e.printStackTrace();
+                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+            }
         });
     }
-
     public void checkAtxAgentStatus(View view) {
         Request request = new Request.Builder()
                 .url(ATX_AGENT_URL + "/ping")
@@ -512,11 +459,9 @@ public class MainActivity extends Activity {
         });
         localBuilder.show();
     }
-
 //    =====================
 //    ==== Float Window ===
 //    =====================
-
     public void showFloatWindow(View view) {
 
         boolean floatEnabled = FloatWindowManager.getInstance().checkFloatPermission(MainActivity.this);
@@ -535,11 +480,9 @@ public class MainActivity extends Activity {
             floatView.hide();
         }
     }
-
 //    =====================
 //    =====================
 //    =====================
-
     public void checkNetworkAddress(View v) {
         WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         int ip = wifiManager.getConnectionInfo().getIpAddress();
@@ -554,5 +497,19 @@ public class MainActivity extends Activity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         Permissons4App.handleRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+    private Class<?> loadClass(String classPath){
+        String apkName = null;
+        PathClassLoader pathClassLoader = null;
+        Class<?> handler = null;
+        try {
+            apkName = getPackageManager().getApplicationInfo(PACKAGE_PATH,0).sourceDir;
+            pathClassLoader = new dalvik.system.PathClassLoader(apkName, ClassLoader.getSystemClassLoader());
+            handler = Class.forName(CLASS_PATH + classPath, true, pathClassLoader);
+        } catch (PackageManager.NameNotFoundException | ClassNotFoundException e) {
+            e.printStackTrace();
+            runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+        }
+        return handler;
     }
 }
