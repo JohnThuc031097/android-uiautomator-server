@@ -24,24 +24,19 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import com.adb.process.ADBCtrl;
+import com.adb.process.Device;
 import com.android.permission.FloatWindowManager;
-import com.cgutman.adblib.AdbBase64;
-import com.cgutman.adblib.AdbConnection;
-import com.cgutman.adblib.AdbCrypto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.uiautomator.util.MemoryManager;
 import com.github.uiautomator.util.OkhttpManager;
 import com.github.uiautomator.util.Permissons4App;
 
-import org.apache.commons.codec.binary.Base64;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.net.Socket;
-import java.security.NoSuchAlgorithmException;
 
 import dalvik.system.PathClassLoader;
 import okhttp3.Call;
@@ -131,6 +126,9 @@ public class MainActivity extends Activity {
         }
         textViewIP = findViewById(R.id.ip_address);
         tvInStorage = findViewById(R.id.in_storage);
+
+//        StrictMode.ThreadPolicy gfgPolicy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+//        StrictMode.setThreadPolicy(gfgPolicy);
 
         String[] permissions = new String[]{
 //                Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -384,24 +382,19 @@ public class MainActivity extends Activity {
         });
     }
     public void testFuncUiautomator(View view)  {
-        AdbConnection adb = null;
-        Socket sock = null;
-        AdbCrypto crypto = null;
-
-        // Setup the crypto object required for the AdbConnection
-        try {
-            crypto = setupCrypto("/sdcard/pub.key", "/sdcard/priv.key");
-            runOnUiThread(new TextViewSetter(tvServiceMessage, "Socket connecting..."));
-            sock = new Socket("localhost", 5555);
-            runOnUiThread(new TextViewSetter(tvServiceMessage, "Socket connected"));
-            runOnUiThread(new TextViewSetter(tvServiceMessage, "ADB connecting..."));
-            adb = AdbConnection.create(sock, crypto);
-            adb.connect();
-            runOnUiThread(new TextViewSetter(tvServiceMessage, "ADB connected"));
-        } catch (Exception e) {
-            e.printStackTrace();
-            runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
-        }
+        runOnUiThread(() ->{
+            try {
+                Device device = new ADBCtrl("/sdcard/adb/").firstDevice();
+                if (device != null){
+                    runOnUiThread(new TextViewSetter(tvServiceMessage, device.deviceName));
+                }else{
+                    runOnUiThread(new TextViewSetter(tvServiceMessage, "No connected device found"));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+            }
+        });
     }
 
 //    ======================
@@ -537,47 +530,5 @@ public class MainActivity extends Activity {
             runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
         }
         return handler;
-    }
-    public static AdbBase64 getBase64Impl() {
-        return new AdbBase64() {
-            @Override
-            public String encodeToString(byte[] arg0) {
-                return Base64.encodeBase64String(arg0);
-            }
-        };
-    }
-    private static AdbCrypto setupCrypto(String pubKeyFile, String privKeyFile)
-            throws NoSuchAlgorithmException, IOException
-    {
-        File pub = new File(pubKeyFile);
-        File priv = new File(privKeyFile);
-        AdbCrypto c = null;
-
-        // Try to load a key pair from the files
-//        if (pub.exists() && priv.exists())
-//        {
-//            try {
-//                c = AdbCrypto.loadAdbKeyPair(getBase64Impl(), priv, pub);
-//            } catch (Exception e) {
-//                // Failed to read from file
-//                e.printStackTrace();
-//                c = null;
-//            }
-//        }
-
-        if (c == null)
-        {
-            // We couldn't load a key, so let's generate a new one
-            c = AdbCrypto.generateAdbKeyPair(getBase64Impl());
-
-            // Save it
-            c.saveAdbKeyPair(priv, pub);
-            System.out.println("Generated new keypair");
-        }
-        else
-        {
-            System.out.println("Loaded existing keypair");
-        }
-        return c;
     }
 }
