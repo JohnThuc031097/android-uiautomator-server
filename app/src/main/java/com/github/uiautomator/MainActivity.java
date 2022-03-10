@@ -12,6 +12,7 @@ import android.graphics.Color;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.provider.Settings;
 import android.text.format.Formatter;
 import android.util.Log;
@@ -24,19 +25,27 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
-import com.adb.process.ADBCtrl;
-import com.adb.process.Device;
 import com.android.permission.FloatWindowManager;
+import com.cgutman.adblib.AdbBase64;
+import com.cgutman.adblib.AdbConnection;
+import com.cgutman.adblib.AdbCrypto;
+import com.cgutman.adblib.AdbStream;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.uiautomator.util.MemoryManager;
 import com.github.uiautomator.util.OkhttpManager;
 import com.github.uiautomator.util.Permissons4App;
 
+import org.apache.commons.codec.binary.Base64;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 
 import dalvik.system.PathClassLoader;
 import okhttp3.Call;
@@ -127,8 +136,8 @@ public class MainActivity extends Activity {
         textViewIP = findViewById(R.id.ip_address);
         tvInStorage = findViewById(R.id.in_storage);
 
-//        StrictMode.ThreadPolicy gfgPolicy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-//        StrictMode.setThreadPolicy(gfgPolicy);
+        StrictMode.ThreadPolicy gfgPolicy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(gfgPolicy);
 
         String[] permissions = new String[]{
 //                Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -151,8 +160,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        checkAtxAgentStatus(null);
-        checkUiautomatorStatus(null);
+//        checkAtxAgentStatus(null);
+//        checkUiautomatorStatus(null);
 
         tvInStorage.setText(Formatter.formatFileSize(this, MemoryManager.getAvailableInternalMemorySize()) + "/" + Formatter.formatFileSize(this, MemoryManager.getTotalExternalMemorySize()));
         checkNetworkAddress(null);
@@ -367,8 +376,8 @@ public class MainActivity extends Activity {
     public void getObjectUiautomator(View view){
         runOnUiThread(() ->{
             try {
-                Class<?> clsSelector = loadClass(".Selector");
-                Class<?> clsAutomatorServiceImpl = loadClass(".AutomatorServiceImpl");
+                Class<?> clsSelector = Class.forName(CLASS_PATH + ".Selector");
+                Class<?> clsAutomatorServiceImpl = Class.forName(CLASS_PATH + ".AutomatorServiceImpl");
                 Object obj = clsAutomatorServiceImpl.newInstance();
                 Object selectorValue = new ObjectMapper().readValue("{\"text\":\"CHECK\"}", clsSelector);
                 Method objInfo = obj.getClass().getDeclaredMethod("objInfo", clsSelector);
@@ -383,33 +392,43 @@ public class MainActivity extends Activity {
     }
     public void testFuncUiautomator(View view)  {
         runOnUiThread(() ->{
-            try {
-                Device device = new ADBCtrl("/sdcard/adb/").firstDevice();
-                if (device != null){
-                    runOnUiThread(new TextViewSetter(tvServiceMessage, device.deviceName));
-                }else{
-                    runOnUiThread(new TextViewSetter(tvServiceMessage, "No connected device found"));
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
-            }
+
         });
     }
 
 //    ======================
 //    ===== ATX-Agent ======
 //    ======================
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public void startAtxAgentStatus(View view) {
-        runOnUiThread(() -> {
+        runOnUiThread(()->{
+            AdbConnection adb;
+            AdbStream stream;
+            Socket sock;
+            AdbCrypto crypto;
             try {
-                Class<?> classz = loadClass(".Stub");
-                Object obj = classz.newInstance();
-                Method mRun = obj.getClass().getDeclaredMethod("launchPackage", String.class);
-                String result = String.valueOf(mRun.invoke(obj, "com.instagram.android"));
-                runOnUiThread(new TextViewSetter(tvServiceMessage, result));
-            }catch (Exception e){
+                crypto = setupCrypto("/sdcard/adb/pub.key", "/sdcard/adb/priv.key");
+                sock = new Socket("localhost", 5555);
+                adb = AdbConnection.create(sock, crypto);
+                adb.connect();
+                stream = adb.open("shell:");
+            new Thread(() -> {
+                while (!stream.isClosed())
+                    try {
+                        // Print each thing we read from the shell stream
+                        String data = new String(stream.read(), "US-ASCII");
+                        runOnUiThread(new TextViewSetter(tvServiceMessage, data));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+                    }
+            }).start();
+                stream.write("am instrument -w -r -e debug false -e class com.github.uiautomator.stub.Stub \\com.github.uiautomator.test/androidx.test.runner.AndroidJUnitRunner");
+                stream.write("\r\n");
+            } catch (IOException | InterruptedException | NoSuchAlgorithmException e) {
+                System.out.println(e);
                 e.printStackTrace();
+                System.out.println(e);
                 runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
             }
         });
@@ -530,5 +549,53 @@ public class MainActivity extends Activity {
             runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
         }
         return handler;
+    }
+    public static AdbBase64 getBase64Impl() {
+        return new AdbBase64() {
+            @Override
+            public String encodeToString(byte[] arg0) {
+                return Base64.encodeBase64String(arg0);
+            }
+        };
+    }
+    private static AdbCrypto setupCrypto(String pubKeyFile, String privKeyFile)
+            throws NoSuchAlgorithmException, IOException
+    {
+        File pub = new File(pubKeyFile);
+        File priv = new File(privKeyFile);
+        AdbCrypto c = null;
+
+        // Try to load a key pair from the files
+        if (pub.exists() && priv.exists())
+        {
+            try {
+                c = AdbCrypto.loadAdbKeyPair(getBase64Impl(), priv, pub);
+            } catch (IOException e) {
+                // Failed to read from file
+                c = null;
+            } catch (InvalidKeySpecException e) {
+                // Key spec was invalid
+                c = null;
+            } catch (NoSuchAlgorithmException e) {
+                // RSA algorithm was unsupported with the crypo packages available
+                c = null;
+            }
+        }
+
+        if (c == null)
+        {
+            // We couldn't load a key, so let's generate a new one
+            c = AdbCrypto.generateAdbKeyPair(getBase64Impl());
+
+            // Save it
+            c.saveAdbKeyPair(priv, pub);
+            System.out.println("Generated new keypair");
+        }
+        else
+        {
+            System.out.println("Loaded existing keypair");
+        }
+
+        return c;
     }
 }
