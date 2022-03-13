@@ -56,11 +56,11 @@ public class FloatView extends FrameLayout {
 
     public FloatView(Context context) {
         super(context);
-        this.context = context;
+        this._context = context;
 
         windowManager = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
         LayoutInflater inflater = LayoutInflater.from(getContext());
-        ImageView imageView = new ImageView(this.context);
+        ImageView imageView = new ImageView(this._context);
         imageView.setImageResource(R.drawable.icon);
         Log.d(TAG, String.format("imageView size: %dx%d", imageView.getWidth(), imageView.getHeight()));
         addView(imageView);

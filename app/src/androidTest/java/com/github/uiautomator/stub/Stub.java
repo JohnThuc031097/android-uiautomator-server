@@ -23,30 +23,12 @@
 
 package com.github.uiautomator.stub;
 
-import android.content.Context;
-import android.content.Intent;
-import android.os.RemoteException;
-
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.SdkSuppress;
-import androidx.test.platform.app.InstrumentationRegistry;
-import androidx.test.uiautomator.By;
-import androidx.test.uiautomator.UiDevice;
-import androidx.test.uiautomator.UiObjectNotFoundException;
-import androidx.test.uiautomator.Until;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.googlecode.jsonrpc4j.ErrorResolver;
-import com.googlecode.jsonrpc4j.JsonRpcServer;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import java.io.PrintWriter;
-import java.io.StringWriter;
 
 /**
  * Use JUnit test to start the uiautomator jsonrpc server.
@@ -54,7 +36,7 @@ import java.io.StringWriter;
  * @author xiaocong@gmail.com
  */
 @RunWith(AndroidJUnit4.class)
-@SdkSuppress(minSdkVersion = 18)
+@SdkSuppress(minSdkVersion = 23)
 public class Stub {
 //    private final String TAG = "UIAUTOMATOR";
 //    private static final int LAUNCH_TIMEOUT = 5000;
@@ -139,7 +121,7 @@ public class Stub {
 //    }
 
     @Test
-//    @LargeTest
+    @LargeTest
     public void testUIAutomatorStub() throws InterruptedException {
 //        while (server.isAlive()) {
         while (true) {

@@ -27,10 +27,9 @@ import androidx.annotation.RequiresApi;
 
 import com.android.permission.FloatWindowManager;
 import com.cgutman.adblib.AdbBase64;
-import com.cgutman.adblib.AdbConnection;
 import com.cgutman.adblib.AdbCrypto;
-import com.cgutman.adblib.AdbStream;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.uiautomator.util.AdbLocal;
 import com.github.uiautomator.util.MemoryManager;
 import com.github.uiautomator.util.OkhttpManager;
 import com.github.uiautomator.util.Permissons4App;
@@ -42,8 +41,6 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 
@@ -399,36 +396,14 @@ public class MainActivity extends Activity {
 //    ======================
 //    ===== ATX-Agent ======
 //    ======================
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    @RequiresApi(api = Build.VERSION_CODES.O)
     public void startAtxAgentStatus(View view) {
         runOnUiThread(()->{
-            AdbConnection adb;
-            AdbStream stream;
-            Socket sock;
-            AdbCrypto crypto;
+            AdbLocal adbLocal = new AdbLocal(view.getContext());
             try {
-                crypto = setupCrypto("/sdcard/adb/pub.key", "/sdcard/adb/priv.key");
-                sock = new Socket("localhost", 5555);
-                adb = AdbConnection.create(sock, crypto);
-                adb.connect();
-                stream = adb.open("shell:");
-            new Thread(() -> {
-                while (!stream.isClosed())
-                    try {
-                        // Print each thing we read from the shell stream
-                        String data = new String(stream.read(), "US-ASCII");
-                        runOnUiThread(new TextViewSetter(tvServiceMessage, data));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
-                    }
-            }).start();
-                stream.write("am instrument -w -r -e debug false -e class com.github.uiautomator.stub.Stub \\com.github.uiautomator.test/androidx.test.runner.AndroidJUnitRunner");
-                stream.write("\r\n");
-            } catch (IOException | InterruptedException | NoSuchAlgorithmException e) {
-                System.out.println(e);
+                adbLocal.initializeClient();
+            } catch (Exception e) {
                 e.printStackTrace();
-                System.out.println(e);
                 runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
             }
         });
