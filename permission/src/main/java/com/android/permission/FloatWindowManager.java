@@ -6,16 +6,11 @@ package com.android.permission;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.PixelFormat;
-import android.graphics.Point;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.WindowManager;
 
 import com.android.permission.rom.HuaweiUtils;
 import com.android.permission.rom.MeizuUtils;
@@ -279,7 +274,7 @@ public class FloatWindowManager {
     }
 
     public static void commonROMPermissionApplyInternal(Context context) throws NoSuchFieldException, IllegalAccessException {
-        Class clazz = Settings.class;
+        Class<?> clazz = Settings.class;
         Field field = clazz.getDeclaredField("ACTION_MANAGE_OVERLAY_PERMISSION");
 
         Intent intent = new Intent(field.get(null).toString());
@@ -289,7 +284,7 @@ public class FloatWindowManager {
     }
 
     private void showConfirmDialog(Context context, OnConfirmResult result) {
-        showConfirmDialog(context, "您的手机没有授予悬浮窗权限，请开启后再试", result);
+        showConfirmDialog(context, "Your mobile phone does not grant the permission of the floating window, please turn it on and try again", result);
     }
 
     private void showConfirmDialog(Context context, String message, final OnConfirmResult result) {
@@ -299,21 +294,14 @@ public class FloatWindowManager {
 
         dialog = new AlertDialog.Builder(context).setCancelable(true).setTitle("")
                 .setMessage(message)
-                .setPositiveButton("现在去开启",
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                result.confirmResult(true);
-                                dialog.dismiss();
-                            }
-                        }).setNegativeButton("暂不开启",
-                        new DialogInterface.OnClickListener() {
-
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                result.confirmResult(false);
-                                dialog.dismiss();
-                            }
+                .setPositiveButton("Go now",
+                        (dialog, which) -> {
+                            result.confirmResult(true);
+                            dialog.dismiss();
+                        }).setNegativeButton("Not open for now",
+                        (dialog, which) -> {
+                            result.confirmResult(false);
+                            dialog.dismiss();
                         }).create();
         dialog.show();
     }

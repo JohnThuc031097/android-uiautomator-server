@@ -13,7 +13,7 @@
         <TextView
             android:id="@+id/atx_agent_status"
             style="@style/LeftTitle"
-            android:text="@string/atx_agent"
+            android:text="@string/adb"
             android:textStyle="bold" />
 
         <LinearLayout
@@ -24,8 +24,8 @@
                 style="@style/SelectButton"
                 android:layout_width="0dp"
                 android:layout_weight="1"
-                android:onClick="startAtxAgentStatus"
-                android:text="@string/start_atxagent" />
+                android:onClick="startAdbStatus"
+                android:text="@string/start_adb" />
         </LinearLayout>
 
         <LinearLayout
@@ -36,16 +36,15 @@
                 style="@style/SelectButton"
                 android:layout_width="0dp"
                 android:layout_weight="1"
-                android:onClick="checkAtxAgentStatus"
-                android:text="@string/check_atxagent" />
+                android:onClick="checkAdbStatus"
+                android:text="@string/check_adb" />
 
             <Button
-                android:id="@+id/stop_atx_agent"
                 style="@style/SelectButton"
                 android:layout_width="0dp"
                 android:layout_weight="1"
-                android:onClick="atxAgentStopConfirm"
-                android:text="@string/stop_atxagent" />
+                android:onClick="adbStopConfirm"
+                android:text="@string/stop_adb" />
         </LinearLayout>
 
         <LinearLayout
@@ -70,20 +69,22 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal">
-            <Button
-                style="@style/SelectButton"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:onClick="checkUiautomatorStatus"
-                android:text="@string/check_uiautomator" />
 
             <Button
-                android:id="@+id/testUiautomator"
                 style="@style/SelectButton"
                 android:layout_width="0dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:onClick="testUiautomator"
-                android:text="@string/test_uiautomator" />
+                android:onClick="loadUiautomator"
+                android:text="@string/load_uiautomator" />
+
+            <Button
+                style="@style/SelectButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="stopUiautomator"
+                android:text="@string/stop_uiautomator" />
         </LinearLayout>
 
         <LinearLayout
@@ -132,22 +133,19 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/start_uiautomator"
                 style="@style/SelectButton"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:onClick="startUiautomator"
-                android:text="@string/start_uiautomator" />
+                android:onClick="checkUiautomatorStatus"
+                android:text="@string/check_uiautomator" />
 
             <Button
-                android:id="@+id/stop_uiautomator"
+                android:id="@+id/testUiautomator"
                 style="@style/SelectButton"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:onClick="stopUiautomator"
-                android:text="@string/stop_uiautomator" />
+                android:onClick="testUiautomator"
+                android:text="@string/test_uiautomator" />
 
         </LinearLayout>
 

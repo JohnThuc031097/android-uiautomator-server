@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -26,23 +25,20 @@ import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 import com.android.permission.FloatWindowManager;
-import com.cgutman.adblib.AdbBase64;
-import com.cgutman.adblib.AdbCrypto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.uiautomator.util.AdbLocal;
 import com.github.uiautomator.util.MemoryManager;
 import com.github.uiautomator.util.OkhttpManager;
 import com.github.uiautomator.util.Permissons4App;
 
-import org.apache.commons.codec.binary.Base64;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 
 import dalvik.system.PathClassLoader;
 import okhttp3.Call;
@@ -54,6 +50,7 @@ import okhttp3.Response;
 
 public class MainActivity extends Activity {
     private final String TAG = "ATXMainActivity";
+    private AdbLocal adbLocal = null;
     private final int PORT = 7912;
     private final String ATX_AGENT_URL = "http://127.0.0.1:" + PORT;
     private final String PACKAGE_PATH = "com.github.uiautomator.test";
@@ -144,7 +141,9 @@ public class MainActivity extends Activity {
 //                Manifest.permission.RECEIVE_SMS,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.SYSTEM_ALERT_WINDOW
+                Manifest.permission.SYSTEM_ALERT_WINDOW,
+                Manifest.permission.INTERNET,
+                Manifest.permission.WRITE_SECURE_SETTINGS
         };
         Permissons4App.initPermissions(this, permissions);
     }
@@ -153,13 +152,14 @@ public class MainActivity extends Activity {
     protected void onStart() {
         super.onStart();
     }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @SuppressLint("SetTextI18n")
     @Override
     protected void onResume() {
         super.onResume();
 //        checkAtxAgentStatus(null);
 //        checkUiautomatorStatus(null);
-
         tvInStorage.setText(Formatter.formatFileSize(this, MemoryManager.getAvailableInternalMemorySize()) + "/" + Formatter.formatFileSize(this, MemoryManager.getTotalExternalMemorySize()));
         checkNetworkAddress(null);
     }
@@ -184,6 +184,22 @@ public class MainActivity extends Activity {
     //    =========================
 //    ====== UIAutomator ======
 //    =========================
+    public void loadUiautomator(View view) {
+        if(adbLocal != null){
+            if(adbLocal.ready()){
+                runOnUiThread(()->{
+                    try {
+                        adbLocal.sendToShellProcess("am instrument -w -r -e debug false -e class com.github.uiautomator.stub.Stub \\com.github.uiautomator.test/androidx.test.runner.AndroidJUnitRunner");
+                        String result = this.readOutputFile(adbLocal.outputBufferFile());
+                        runOnUiThread(new TextViewSetter(tvServiceMessage, result));
+                    }catch (Exception e){
+                        e.printStackTrace();
+                        runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+                    }
+                });
+            }
+        }
+    }
     public void checkUiautomatorStatus(View view) {
         Request request = new Request.Builder()
                 .url(ATX_AGENT_URL + "/uiautomator")
@@ -242,26 +258,6 @@ public class MainActivity extends Activity {
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                checkUiautomatorStatus(null);
-            }
-        });
-    }
-    public void startUiautomator(View view) {
-        Request request = new Request.Builder()
-                .url(ATX_AGENT_URL + "/uiautomator")
-                .post(RequestBody.create(new byte[0]))
-                .build();
-        okhttpManager.newCall(request, new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-                uiToaster("UIAutomator not starting");
-                checkUiautomatorStatus(null);
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                uiToaster("UIAutomator started");
                 checkUiautomatorStatus(null);
             }
         });
@@ -388,88 +384,61 @@ public class MainActivity extends Activity {
         });
     }
     public void testFuncUiautomator(View view)  {
-        runOnUiThread(() ->{
-
-        });
     }
 
 //    ======================
 //    ===== ATX-Agent ======
 //    ======================
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public void startAtxAgentStatus(View view) {
+    public void startAdbStatus(View view) {
         runOnUiThread(()->{
-            AdbLocal adbLocal = new AdbLocal(view.getContext());
+            runOnUiThread(new TextViewSetter(tvServiceMessage, "Start run local adb"));
+            if(adbLocal == null){
+                adbLocal = new AdbLocal(getApplicationContext());
+            }
             try {
                 adbLocal.initializeClient();
+                Thread.sleep(1000);
+                runOnUiThread(new TextViewSetter(tvAgentStatus,"ADB: Running"));
+                String result = readOutputFile(adbLocal.outputBufferFile());
+                runOnUiThread(new TextViewSetter(tvServiceMessage, result));
             } catch (Exception e) {
                 e.printStackTrace();
                 runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
             }
         });
     }
-    public void checkAtxAgentStatus(View view) {
-        Request request = new Request.Builder()
-                .url(ATX_AGENT_URL + "/ping")
-                .get()
-                .build();
-        okhttpManager.newCall(request, new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-                runOnUiThread(new TextViewSetter(tvAgentStatus, "AtxAgent Stopped"));
-                runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) {
-                runOnUiThread(new TextViewSetter(tvAgentStatus, "AtxAgent Running"));
-                try {
-                    runOnUiThread(new TextViewSetter(tvServiceMessage, response.body().string()));
-                } catch (IOException e) {
+    public void checkAdbStatus(View view) {
+        if(adbLocal != null){
+            runOnUiThread(new TextViewSetter(tvServiceMessage,"Local adb run:" + adbLocal.ready()));
+        }else{
+            runOnUiThread(new TextViewSetter(tvServiceMessage,"Local adb run: null"));
+        }
+    }
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void stopAdbAgent() {
+        if(adbLocal != null){
+            if(adbLocal.ready()){
+                try{
+                    adbLocal.stop();
+                    Thread.sleep(1000);
+                    runOnUiThread(new TextViewSetter(tvAgentStatus,"ADB: Stopped"));
+                    String result = readOutputFile(adbLocal.outputBufferFile());
+                    runOnUiThread(new TextViewSetter(tvServiceMessage, result));
+                }catch (Exception e){
                     e.printStackTrace();
-                    runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
+                    runOnUiThread(new TextViewSetter(tvServiceMessage,e.toString()));
                 }
             }
-        });
+        }
     }
-    private void stopAtxAgent() {
-        Request request = new Request.Builder()
-                .url(ATX_AGENT_URL + "/stop")
-                .get()
-                .build();
-        okhttpManager.newCall(request, new Callback() {
-
-            @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-                uiToaster("AtxAgent already stopped");
-                checkAtxAgentStatus(null);
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) {
-                uiToaster("AtxAgent stopped");
-                checkAtxAgentStatus(null);
-            }
-        });
-    }
-    public void atxAgentStopConfirm(View view) {
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void adbStopConfirm(View view) {
         AlertDialog.Builder localBuilder = new AlertDialog.Builder(this);
-        localBuilder.setTitle("Stopping AtxAgent");
-        localBuilder.setMessage("ATX-Agent must be started via adb next time");
-        localBuilder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                stopAtxAgent();
-            }
-        });
-        localBuilder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
+        localBuilder.setTitle("Stopping Local Adb");
+        localBuilder.setMessage("Do you want stop adb?");
+        localBuilder.setPositiveButton("YES", (dialog, which) -> stopAdbAgent());
+        localBuilder.setNegativeButton("CANCEL", (dialog, which) -> dialog.dismiss());
         localBuilder.show();
     }
 //    =====================
@@ -525,52 +494,15 @@ public class MainActivity extends Activity {
         }
         return handler;
     }
-    public static AdbBase64 getBase64Impl() {
-        return new AdbBase64() {
-            @Override
-            public String encodeToString(byte[] arg0) {
-                return Base64.encodeBase64String(arg0);
-            }
-        };
-    }
-    private static AdbCrypto setupCrypto(String pubKeyFile, String privKeyFile)
-            throws NoSuchAlgorithmException, IOException
-    {
-        File pub = new File(pubKeyFile);
-        File priv = new File(privKeyFile);
-        AdbCrypto c = null;
-
-        // Try to load a key pair from the files
-        if (pub.exists() && priv.exists())
-        {
-            try {
-                c = AdbCrypto.loadAdbKeyPair(getBase64Impl(), priv, pub);
-            } catch (IOException e) {
-                // Failed to read from file
-                c = null;
-            } catch (InvalidKeySpecException e) {
-                // Key spec was invalid
-                c = null;
-            } catch (NoSuchAlgorithmException e) {
-                // RSA algorithm was unsupported with the crypo packages available
-                c = null;
-            }
+    String readOutputFile(File pfile) throws IOException {
+        StringBuilder text = new StringBuilder();
+        BufferedReader br = new BufferedReader(new FileReader(pfile));
+        String line;
+        while ((line = br.readLine()) != null) {
+            text.append(line);
+            text.append('\n');
         }
-
-        if (c == null)
-        {
-            // We couldn't load a key, so let's generate a new one
-            c = AdbCrypto.generateAdbKeyPair(getBase64Impl());
-
-            // Save it
-            c.saveAdbKeyPair(priv, pub);
-            System.out.println("Generated new keypair");
-        }
-        else
-        {
-            System.out.println("Loaded existing keypair");
-        }
-
-        return c;
+        br.close();
+        return text.toString();
     }
 }

@@ -22,7 +22,7 @@ android {
 
     defaultConfig {
         applicationId "com.github.uiautomator"
-        minSdkVersion 23
+        minSdkVersion 18
         targetSdkVersion 31
         versionCode 1
         versionName "1.0"
@@ -45,6 +45,12 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = true
         }
     }
 }

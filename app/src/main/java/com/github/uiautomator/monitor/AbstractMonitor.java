@@ -11,7 +11,7 @@ abstract public class AbstractMonitor {
     HttpPostNotifier notifier;
 
     public AbstractMonitor(Context context, HttpPostNotifier notifier) {
-        this._context = context;
+        this.context = context;
         this.notifier = notifier;
         init();
         try {

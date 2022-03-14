@@ -33,12 +33,12 @@
     <string name="agent_live">:agent is live</string>
     <string name="fast_input_label">FastInputIME</string>
 <!--   ATX-AGENT-->
-    <string name="stop_atxagent">stop</string>
-    <string name="start_atxagent">start</string>
-    <string name="check_atxagent">check</string>
+    <string name="stop_adb">stop</string>
+    <string name="start_adb">start</string>
+    <string name="check_adb">check</string>
 <!--    UIAutomator-->
     <string name="stop_uiautomator">stop</string>
-    <string name="start_uiautomator">start</string>
+    <string name="load_uiautomator">load</string>
     <string name="check_uiautomator">check</string>
     <string name="test_uiautomator">test</string>
     <string name="clipboard_uiautomator">clipboard</string>
@@ -57,7 +57,7 @@
     <string name="result">Result:</string>
     <string name="quit">quit</string>
     <string name="no_permission_tip">No permission to write sd card</string>
-    <string name="atx_agent">ATX-Agent</string>
+    <string name="adb">Local ADB</string>
     <string name="avaible_internal_storage">Internal Storage:</string>
     <string name="avaible_sd_storage">SD Storage:</string>
     <string name="channel_name">ATXTest</string>
