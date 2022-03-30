@@ -23,6 +23,7 @@
 
 package com.github.uiautomator.stub;
 
+import android.app.Instrumentation;
 import android.os.RemoteException;
 import androidx.test.uiautomator.UiObjectNotFoundException;
 
@@ -38,6 +39,7 @@ public interface AutomatorService {
      * void runWatchersOnWindowsChange(boolean enabled); # Auto click permission popups, This will slow uiautomator speed
      */
 
+    Instrumentation getInstrumentation();
 
     /**
      * It's to play a section music to test

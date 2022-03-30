@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Instrumentation;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -26,7 +27,6 @@ import androidx.annotation.RequiresApi;
 
 import com.android.permission.FloatWindowManager;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.uiautomator.util.AdbLocal;
 import com.github.uiautomator.util.MemoryManager;
 import com.github.uiautomator.util.OkhttpManager;
 import com.github.uiautomator.util.Permissons4App;
@@ -50,7 +50,6 @@ import okhttp3.Response;
 
 public class MainActivity extends Activity {
     private final String TAG = "ATXMainActivity";
-    private AdbLocal adbLocal = null;
     private final int PORT = 7912;
     private final String ATX_AGENT_URL = "http://127.0.0.1:" + PORT;
     private final String PACKAGE_PATH = "com.github.uiautomator.test";
@@ -185,20 +184,7 @@ public class MainActivity extends Activity {
 //    ====== UIAutomator ======
 //    =========================
     public void loadUiautomator(View view) {
-        if(adbLocal != null){
-            if(adbLocal.ready()){
-                runOnUiThread(()->{
-                    try {
-                        adbLocal.sendToShellProcess("am instrument -w -r -e debug false -e class com.github.uiautomator.stub.Stub \\com.github.uiautomator.test/androidx.test.runner.AndroidJUnitRunner");
-                        String result = this.readOutputFile(adbLocal.outputBufferFile());
-                        runOnUiThread(new TextViewSetter(tvServiceMessage, result));
-                    }catch (Exception e){
-                        e.printStackTrace();
-                        runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
-                    }
-                });
-            }
-        }
+
     }
     public void checkUiautomatorStatus(View view) {
         Request request = new Request.Builder()
@@ -383,54 +369,32 @@ public class MainActivity extends Activity {
             }
         });
     }
-    public void testFuncUiautomator(View view)  {
-    }
-
-//    ======================
-//    ===== ATX-Agent ======
-//    ======================
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public void startAdbStatus(View view) {
-        runOnUiThread(()->{
-            runOnUiThread(new TextViewSetter(tvServiceMessage, "Start run local adb"));
-            if(adbLocal == null){
-                adbLocal = new AdbLocal(getApplicationContext());
-            }
+    public void testFuncUiautomator(View view)  {
+        runOnUiThread(() ->{
             try {
-                adbLocal.initializeClient();
-                Thread.sleep(1000);
-                runOnUiThread(new TextViewSetter(tvAgentStatus,"ADB: Running"));
-                String result = readOutputFile(adbLocal.outputBufferFile());
-                runOnUiThread(new TextViewSetter(tvServiceMessage, result));
-            } catch (Exception e) {
+                Class<?> clsAutomatorServiceImpl = loadClass(".AutomatorServiceImpl");
+                Object obj = clsAutomatorServiceImpl.newInstance();
+                Method mGetInstrumentation = obj.getClass().getDeclaredMethod("getInstrumentation");
+                Instrumentation mInstrumentation = (Instrumentation) mGetInstrumentation.invoke(obj);
+                runOnUiThread(new TextViewSetter(tvServiceMessage, mInstrumentation.getProcessName()));
+            } catch (Exception e){
                 e.printStackTrace();
                 runOnUiThread(new TextViewSetter(tvServiceMessage, e.toString()));
             }
         });
     }
+
+//    ======================
+//    ===== ATX-Agent ======
+//    ======================
+    public void startAdbStatus(View view) {
+
+    }
     public void checkAdbStatus(View view) {
-        if(adbLocal != null){
-            runOnUiThread(new TextViewSetter(tvServiceMessage,"Local adb run:" + adbLocal.ready()));
-        }else{
-            runOnUiThread(new TextViewSetter(tvServiceMessage,"Local adb run: null"));
-        }
     }
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void stopAdbAgent() {
-        if(adbLocal != null){
-            if(adbLocal.ready()){
-                try{
-                    adbLocal.stop();
-                    Thread.sleep(1000);
-                    runOnUiThread(new TextViewSetter(tvAgentStatus,"ADB: Stopped"));
-                    String result = readOutputFile(adbLocal.outputBufferFile());
-                    runOnUiThread(new TextViewSetter(tvServiceMessage, result));
-                }catch (Exception e){
-                    e.printStackTrace();
-                    runOnUiThread(new TextViewSetter(tvServiceMessage,e.toString()));
-                }
-            }
-        }
     }
     @RequiresApi(api = Build.VERSION_CODES.O)
     public void adbStopConfirm(View view) {

@@ -23,12 +23,30 @@
 
 package com.github.uiautomator.stub;
 
+import android.content.Context;
+import android.content.Intent;
+import android.os.RemoteException;
+
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 import androidx.test.filters.SdkSuppress;
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.uiautomator.By;
+import androidx.test.uiautomator.UiDevice;
+import androidx.test.uiautomator.UiObjectNotFoundException;
+import androidx.test.uiautomator.Until;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.googlecode.jsonrpc4j.ErrorResolver;
+import com.googlecode.jsonrpc4j.JsonRpcServer;
+
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 /**
  * Use JUnit test to start the uiautomator jsonrpc server.
@@ -38,93 +56,85 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 @SdkSuppress(minSdkVersion = 23)
 public class Stub {
-//    private final String TAG = "UIAUTOMATOR";
-//    private static final int LAUNCH_TIMEOUT = 5000;
-//    // http://www.jsonrpc.org/specification#error_object
-//    private static final int CUSTOM_ERROR_CODE = -32001;
-//
-//    int PORT = 9008;
-//    AutomatorHttpServer server = new AutomatorHttpServer(PORT);
-//
-////    @Before
-//    private void setUp() throws Exception {
-////        launchService();
-////        JsonRpcServer jrs = new JsonRpcServer(new ObjectMapper(), new AutomatorServiceImpl(), AutomatorService.class);
-////        jrs.setShouldLogInvocationErrors(true);
-////        jrs.setErrorResolver((throwable, method, list) -> {
-////            String data = throwable.getMessage();
-////            if (!throwable.getClass().equals(UiObjectNotFoundException.class)) {
-////                throwable.printStackTrace();
-////                StringWriter sw = new StringWriter();
-////                throwable.printStackTrace(new PrintWriter(sw));
-////                data = sw.toString();
-////            }
-////            return new ErrorResolver.JsonError(CUSTOM_ERROR_CODE, throwable.getClass().getName(), data);
-////        });
-////        server.route("/jsonrpc/0", jrs);
-////        server.start();
-//    }
-//
-//    private String launchPackage(String packageName) {
-//        try {
-//            Log.i(TAG, "Launch " + packageName);
-//            UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-//            Context context = InstrumentationRegistry.getInstrumentation().getContext();
-//            final Intent intent = context.getPackageManager()
-//                    .getLaunchIntentForPackage(packageName);
-//            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-//            context.startActivity(intent);
-//
-//            device.wait(Until.hasObject(By.pkg(packageName).depth(0)), LAUNCH_TIMEOUT);
-//            device.pressHome();
-//        }catch (Exception e){
-//            e.printStackTrace();
-//            return e.toString();
-//        }
-//        return "OK";
-//    }
-//
-//    private void launchService() throws RemoteException {
-//        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
-//        Context context = InstrumentationRegistry.getInstrumentation().getContext();
-//        device.wakeUp();
-//
-//        // Wait for launcher
-//        String launcherPackage = device.getLauncherPackageName();
-//        Boolean ready = device.wait(Until.hasObject(By.pkg(launcherPackage).depth(0)), LAUNCH_TIMEOUT);
-//        if (!ready) {
-//            Log.i(TAG, "Wait for launcher timeout");
-//            return;
-//        }
-//
-//        Log.d("Launch service");
-//        startMonitorService(context);
-//    }
-//
-//    private void startMonitorService(Context context) {
-//        Intent intent = new Intent("com.github.uiautomator.ACTION_START");
-//        intent.setPackage("com.github.uiautomator"); // fix error: Service Intent must be explicit
-//        context.startService(intent);
-//    }
-//
-////    @After
-//    private void tearDown() {
-////        server.stop();
-//        Context context = InstrumentationRegistry.getInstrumentation().getContext();
-//        stopMonitorService(context);
-//    }
-//
-//    private void stopMonitorService(Context context) {
-//        Intent intent = new Intent("com.github.uiautomator.ACTION_STOP");
-//        intent.setPackage("com.github.uiautomator");
-//        context.startService(intent);
-//    }
+    private final String TAG = "UIAUTOMATOR";
+    private static final int LAUNCH_TIMEOUT = 5000;
+    private static final int CUSTOM_ERROR_CODE = -32001;
+
+    private static final int PORT = 9008;
+    private static final AutomatorHttpServer server = new AutomatorHttpServer(PORT);
+
+    @Before
+    public void setUp() throws Exception {
+//        launchService();
+        JsonRpcServer jrs = new JsonRpcServer(new ObjectMapper(), new AutomatorServiceImpl(), AutomatorService.class);
+        jrs.setShouldLogInvocationErrors(true);
+        jrs.setErrorResolver((throwable, method, list) -> {
+            String data = throwable.getMessage();
+            if (!throwable.getClass().equals(UiObjectNotFoundException.class)) {
+                throwable.printStackTrace();
+                StringWriter sw = new StringWriter();
+                throwable.printStackTrace(new PrintWriter(sw));
+                data = sw.toString();
+            }
+            return new ErrorResolver.JsonError(CUSTOM_ERROR_CODE, throwable.getClass().getName(), data);
+        });
+        server.route("/jsonrpc/0", jrs);
+        server.start();
+    }
+
+    private void launchPackage(String packageName) {
+        Log.i(TAG, "Launch " + packageName);
+        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        Context context = InstrumentationRegistry.getInstrumentation().getContext();
+        final Intent intent = context.getPackageManager()
+                .getLaunchIntentForPackage(packageName);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        context.startActivity(intent);
+
+        device.wait(Until.hasObject(By.pkg(packageName).depth(0)), LAUNCH_TIMEOUT);
+        device.pressHome();
+    }
+
+    private void launchService() throws RemoteException {
+        UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+        Context context = InstrumentationRegistry.getInstrumentation().getContext();
+        device.wakeUp();
+
+        // Wait for launcher
+        String launcherPackage = device.getLauncherPackageName();
+        Boolean ready = device.wait(Until.hasObject(By.pkg(launcherPackage).depth(0)), LAUNCH_TIMEOUT);
+        if (!ready) {
+            Log.i(TAG, "Wait for launcher timeout");
+            return;
+        }
+
+        Log.d("Launch service");
+        startMonitorService(context);
+    }
+
+    private void startMonitorService(Context context) {
+        Intent intent = new Intent("com.github.uiautomator.ACTION_START");
+        intent.setPackage("com.github.uiautomator"); // fix error: Service Intent must be explicit
+        context.startService(intent);
+    }
+
+    @After
+    public void tearDown() {
+        server.stop();
+        Context context = InstrumentationRegistry.getInstrumentation().getContext();
+        stopMonitorService(context);
+    }
+
+    private void stopMonitorService(Context context) {
+        Intent intent = new Intent("com.github.uiautomator.ACTION_STOP");
+        intent.setPackage("com.github.uiautomator");
+        context.startService(intent);
+    }
 
     @Test
     @LargeTest
     public void testUIAutomatorStub() throws InterruptedException {
-//        while (server.isAlive()) {
-        while (true) {
+        while (server.isAlive()) {
             Thread.sleep(100);
         }
     }

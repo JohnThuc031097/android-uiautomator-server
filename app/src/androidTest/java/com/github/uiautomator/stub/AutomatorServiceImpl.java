@@ -105,6 +105,10 @@ public class AutomatorServiceImpl implements AutomatorService {
         return uiAutomation;
     }
 
+
+    @Override
+    public Instrumentation getInstrumentation(){ return mInstrumentation; }
+
     /**
      * It's to play a section music to test
      *
@@ -153,12 +157,7 @@ public class AutomatorServiceImpl implements AutomatorService {
     @Override
     public boolean makeToast(final String text, final int duration) {
 
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                ToastHelper.makeText(InstrumentationRegistry.getInstrumentation().getTargetContext(), text, duration).show();
-            }
-        });
+        handler.post(() -> ToastHelper.makeText(InstrumentationRegistry.getInstrumentation().getTargetContext(), text, duration).show());
         return true;
     }
 

@@ -74,8 +74,8 @@ public class Service extends android.app.Service {
 
         HttpPostNotifier notifier = new HttpPostNotifier("http://127.0.0.1:7912");
         Context context = getApplicationContext();
-        addMonitor(new BatteryMonitor(this, notifier));
-        addMonitor(new WifiMonitor(this, notifier));
+        addMonitor(new BatteryMonitor(context, notifier));
+        addMonitor(new WifiMonitor(context, notifier));
     }
 
     public void setNotificationContentText(String text) {
@@ -102,7 +102,7 @@ public class Service extends android.app.Service {
 
         if (ACTION_START.equals(action)) {
             Log.i(TAG, "Receive start-service action, but ignore it");
-            startActivity(new Intent(this, MainActivity.class));
+            startService(new Intent(this, MainActivity.class));
         } else if (ACTION_STOP.equals(action)) {
             stopSelf();
         }
